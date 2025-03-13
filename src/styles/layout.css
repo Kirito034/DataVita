@@ -1,0 +1,142 @@
+.notebook-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .notebook-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary);
+  }
+  
+  .notebook-tabs {
+    display: flex;
+    overflow-x: auto;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .notebook-tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    border-right: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    max-width: 200px;
+  }
+  
+  .notebook-tab.active {
+    background-color: var(--bg-secondary);
+    border-bottom: 2px solid var(--text-primary);
+  }
+  
+  .notebook-editor {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .notebook-toolbar {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 8px;
+    background-color: var(--bg-secondary);
+  }
+  
+  .notebook-cells {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  
+  /* Dark mode for the entire app */
+  :root {
+    color-scheme: light;
+  }
+  
+  :root.dark {
+    color-scheme: dark;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .notebook-layout {
+      flex-direction: column;
+    }
+  
+    .notebook-content {
+      width: 100%;
+    }
+  
+    .notebook-tab {
+      min-width: 100px;
+      padding: 8px 12px;
+    }
+  
+    .notebook-toolbar {
+      flex-wrap: wrap;
+    }
+  }
+  
+  /* Dark mode styles */
+  .dark .notebook-layout {
+    background-color: var(--bg-primary);
+  }
+  
+  .dark .notebook-content {
+    background-color: var(--bg-primary);
+  }
+  
+  .dark .notebook-tab {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  
+  .dark .notebook-tab.active {
+    background-color: var(--bg-primary);
+    border-bottom-color: var(--text-primary);
+  }
+  
+  /* Animation for tab transitions */
+  .notebook-tab {
+    transition: all 0.2s ease;
+  }
+  
+  .notebook-tab:hover {
+    background-color: var(--bg-secondary);
+  }
+  
+  /* Ensure content is visible in dark mode */
+  .dark .notebook-cells {
+    color: var(--text-primary);
+  }
+  
+  /* Improve visibility of code cells */
+  .code-cell {
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+    margin: 8px 0;
+    padding: 12px;
+  }
+  
+  /* Output cell styling */
+  .output-cell {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin: 8px 0;
+    padding: 12px;
+  }
+  
+  

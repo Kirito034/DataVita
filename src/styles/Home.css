@@ -1,0 +1,1416 @@
+/* DataVita Landing Page - Isolated Styles */
+/* This CSS file is designed to override any global styles */
+
+/* Base Styles with namespace to avoid conflicts */
+.datavita-landing-page {
+  --datavita-primary: #1a1a1a;
+  --datavita-primary-dark: #000000;
+  --datavita-secondary: #333333;
+  --datavita-accent: #666666;
+  --datavita-text-primary: #1a1a1a;
+  --datavita-text-secondary: #4a4a4a;
+  --datavita-text-light: #767676;
+  --datavita-bg-light: #f5f5f5;
+  --datavita-bg-white: #ffffff;
+  --datavita-bg-dark: #1a1a1a;
+  --datavita-bg-darker: #0a0a0a;
+  --datavita-bg-gray: #e0e0e0;
+  --datavita-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --datavita-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --datavita-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --datavita-radius-sm: 4px;
+  --datavita-radius-md: 8px;
+  --datavita-radius-lg: 16px;
+  --datavita-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --datavita-max-width: 1200px;
+
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+  color: var(--datavita-text-primary) !important;
+  line-height: 1.6 !important;
+  background-color: var(--datavita-bg-light) !important;
+  overflow-x: hidden !important;
+  position: relative !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Container */
+.datavita-container {
+  width: 100% !important;
+  max-width: var(--datavita-max-width) !important;
+  margin: 0 auto !important;
+  padding: 0 1.5rem !important;
+  box-sizing: border-box !important;
+}
+
+/* Typography */
+.datavita-landing-page h1,
+.datavita-landing-page h2,
+.datavita-landing-page h3,
+.datavita-landing-page h4,
+.datavita-landing-page h5,
+.datavita-landing-page h6 {
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 1rem !important;
+  color: var(--datavita-text-primary) !important;
+}
+
+.datavita-landing-page h1 {
+  font-size: clamp(2.5rem, 5vw, 4.5rem) !important;
+  letter-spacing: -0.03em !important;
+  font-weight: 800 !important;
+}
+
+.datavita-landing-page h2 {
+  font-size: clamp(2rem, 4vw, 3.5rem) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.datavita-landing-page h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.datavita-landing-page p {
+  margin-bottom: 1rem !important;
+  color: var(--datavita-text-secondary) !important;
+}
+
+.datavita-section-title {
+  text-align: center !important;
+  position: relative !important; /* Required for ::after positioning */
+}
+
+.datavita-section-title::after {
+  content: "" !important;
+  position: absolute !important; /* Ensures proper placement */
+  bottom: -10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important; /* Centers it */
+  width: 60px !important;
+  height: 3px !important;
+  background-color: var(--datavita-primary) !important;
+}
+
+.datavita-section-subtitle {
+  text-align: center !important;
+  color: var(--datavita-text-secondary) !important;
+  font-size: 1.125rem !important;
+  max-width: 600px !important;
+  margin: 2rem auto 3rem !important;
+}
+
+/* Buttons */
+.datavita-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: var(--datavita-radius-md) !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  transition: var(--datavita-transition) !important;
+  border: none !important;
+  outline: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-decoration: none !important;
+}
+
+.datavita-btn::after {
+  content: "" !important;
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  top: 0 !important;
+  left: -100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-btn:hover::after {
+  left: 100% !important;
+}
+
+.datavita-btn-primary {
+  background-color: var(--datavita-primary) !important;
+  color: white !important;
+}
+
+.datavita-btn-primary:hover {
+  background-color: var(--datavita-primary-dark) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--datavita-shadow-md) !important;
+}
+
+.datavita-btn-outline {
+  background-color: transparent !important;
+  color: var(--datavita-primary) !important;
+  border: 2px solid var(--datavita-primary) !important;
+}
+
+.datavita-btn-outline:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-2px) !important;
+}
+
+.datavita-btn-lg {
+  padding: 1rem 2rem !important;
+  font-size: 1.125rem !important;
+}
+
+.datavita-btn-full {
+  width: 100% !important;
+}
+
+.datavita-cta-buttons {
+  display: flex !important;
+  gap: 1rem !important;
+  margin-top: 2rem !important;
+}
+
+/* Header */
+.datavita-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 1000 !important;
+  padding: 1.5rem 0 !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-header-scrolled {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow: var(--datavita-shadow-sm) !important;
+  padding: 1rem 0 !important;
+}
+
+.datavita-header-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.datavita-logo {
+  display: flex !important;
+  align-items: center !important;
+  font-weight: 800 !important;
+  font-size: 1.5rem !important;
+  color: var(--datavita-primary) !important;
+}
+
+.datavita-logo-text {
+  position: relative !important;
+}
+
+.datavita-logo-dot {
+  width: 8px !important;
+  height: 8px !important;
+  background-color: var(--datavita-accent) !important;
+  border-radius: 50% !important;
+  margin-left: 2px !important;
+}
+
+.datavita-nav-links {
+  display: flex !important;
+  gap: 2rem !important;
+}
+
+.datavita-nav-link {
+  color: var(--datavita-text-primary) !important;
+  font-weight: 500 !important;
+  position: relative !important;
+  text-decoration: none !important;
+}
+
+.datavita-nav-link::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: -4px !important;
+  left: 0 !important;
+  width: 0 !important;
+  height: 2px !important;
+  background-color: var(--datavita-primary) !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-nav-link:hover {
+  color: var(--datavita-primary) !important;
+}
+
+.datavita-nav-link:hover::after {
+  width: 100% !important;
+}
+
+.datavita-auth-buttons {
+  display: flex !important;
+  gap: 1rem !important;
+}
+
+.datavita-mobile-menu-btn {
+  display: none !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  width: 30px !important;
+  height: 20px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  z-index: 1001 !important;
+}
+
+.datavita-mobile-menu-btn span {
+  width: 100% !important;
+  height: 2px !important;
+  background-color: var(--datavita-text-primary) !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-mobile-menu-btn.datavita-active span:nth-child(1) {
+  transform: translateY(9px) rotate(45deg) !important;
+}
+
+.datavita-mobile-menu-btn.datavita-active span:nth-child(2) {
+  opacity: 0 !important;
+}
+
+.datavita-mobile-menu-btn.datavita-active span:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg) !important;
+}
+
+/* Scroll Indicator */
+.datavita-scroll-indicator {
+  position: absolute !important;
+  bottom: 40px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  color: var(--datavita-text-secondary) !important;
+  opacity: 0.8 !important;
+  transition: var(--datavita-transition) !important;
+  z-index: 10 !important;
+}
+
+.datavita-scroll-indicator.datavita-hidden {
+  opacity: 0 !important;
+  transform: translate(-50%, 20px) !important;
+  pointer-events: none !important;
+}
+
+.datavita-scroll-icon {
+  width: 30px !important;
+  height: 50px !important;
+  border: 2px solid var(--datavita-text-secondary) !important;
+  border-radius: 15px !important;
+  margin-bottom: 10px !important;
+  position: relative !important;
+}
+
+.datavita-scroll-icon span {
+  position: absolute !important;
+  width: 6px !important;
+  height: 6px !important;
+  background: var(--datavita-text-secondary) !important;
+  border-radius: 50% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: 10px !important;
+  animation: datavitaScrollAnim 1.5s infinite !important;
+}
+
+@keyframes datavitaScrollAnim {
+  0% {
+    opacity: 1;
+    top: 10px;
+  }
+  100% {
+    opacity: 0;
+    top: 30px;
+  }
+}
+
+/* Hero Section */
+.datavita-hero {
+  padding: 12rem 0 8rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.datavita-hero::before {
+  content: "" !important;
+  position: absolute !important;
+  top: -10% !important;
+  right: -10% !important;
+  width: 600px !important;
+  height: 600px !important;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.02) 50%, rgba(0, 0, 0, 0) 70%) !important;
+  border-radius: 50% !important;
+  z-index: -1 !important;
+}
+
+.datavita-hero .datavita-container {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 4rem !important;
+  align-items: center !important;
+}
+
+.datavita-hero-content {
+  max-width: 600px !important;
+}
+
+.datavita-hero-image {
+  position: relative !important;
+  height: 400px !important;
+}
+
+.datavita-blob-shape {
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(135deg, #333 0%, #111 100%) !important;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70% !important;
+  opacity: 0.1 !important;
+  animation: datavitaBlobAnimation 8s infinite alternate !important;
+}
+
+@keyframes datavitaBlobAnimation {
+  0% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+  50% {
+    border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+  }
+  100% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+}
+
+.datavita-floating-card {
+  position: absolute !important;
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-md) !important;
+  box-shadow: var(--datavita-shadow-md) !important;
+  padding: 1rem !important;
+  width: 180px !important;
+  height: 120px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.datavita-card-content {
+  text-align: center !important;
+}
+
+.datavita-card-icon {
+  font-size: 2rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.datavita-card-text {
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+}
+
+.datavita-card-1 {
+  top: 20% !important;
+  left: 10% !important;
+  animation: datavitaFloat 6s ease-in-out infinite !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.datavita-card-2 {
+  top: 50% !important;
+  right: 10% !important;
+  animation: datavitaFloat 8s ease-in-out infinite 1s !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.datavita-card-3 {
+  bottom: 10% !important;
+  left: 30% !important;
+  animation: datavitaFloat 7s ease-in-out infinite 0.5s !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+@keyframes datavitaFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+/* Features Section */
+.datavita-features {
+  padding: 8rem 0 !important;
+  background-color: var(--datavita-bg-white) !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.datavita-features::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0) 100%) !important;
+  z-index: -1 !important;
+}
+
+.datavita-feature-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+  gap: 2.5rem !important;
+  margin-top: 4rem !important;
+}
+
+.datavita-feature-card {
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-lg) !important;
+  padding: 2.5rem !important;
+  box-shadow: var(--datavita-shadow-sm) !important;
+  transition: var(--datavita-transition) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.datavita-feature-card::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 4px !important;
+  height: 0 !important;
+  background-color: var(--datavita-primary) !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-feature-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--datavita-shadow-md) !important;
+}
+
+.datavita-feature-card:hover::before {
+  height: 100% !important;
+}
+
+.datavita-feature-icon {
+  width: 70px !important;
+  height: 70px !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  border-radius: var(--datavita-radius-md) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 1.5rem !important;
+  color: var(--datavita-primary) !important;
+  font-size: 1.75rem !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-feature-hover-content {
+  margin-top: 1.5rem !important;
+  opacity: 0 !important;
+  transform: translateY(10px) !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-feature-card:hover .datavita-feature-hover-content {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.datavita-feature-link {
+  color: var(--datavita-primary) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.datavita-feature-link::after {
+  content: "→" !important;
+  margin-left: 0.5rem !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-feature-link:hover::after {
+  transform: translateX(3px) !important;
+}
+
+.datavita-feature-card:hover .datavita-feature-icon {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  transform: scale(1.05) !important;
+}
+
+.datavita-feature-card h3 {
+  margin-bottom: 0.75rem !important;
+  transition: var(--datavita-transition) !important;
+}
+
+.datavita-feature-card:hover h3 {
+  transform: translateX(5px) !important;
+}
+
+.datavita-feature-card p {
+  color: var(--datavita-text-secondary) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Icon placeholders */
+.datavita-icon-notebook::before {
+  content: "📓" !important;
+}
+.datavita-icon-explorer::before {
+  content: "🔍" !important;
+}
+.datavita-icon-files::before {
+  content: "📁" !important;
+}
+.datavita-icon-package::before {
+  content: "📦" !important;
+}
+
+/* Testimonials Section */
+.datavita-testimonials {
+  padding: 8rem 0 !important;
+  background-color: var(--datavita-bg-light) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.datavita-testimonials::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0) 100%) !important;
+  z-index: 0 !important;
+}
+
+.datavita-testimonial-slider {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  gap: 2.5rem !important;
+  margin-top: 4rem !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.datavita-testimonial-card {
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-lg) !important;
+  padding: 3rem !important;
+  box-shadow: var(--datavita-shadow-md) !important;
+  position: relative !important;
+  transition: var(--datavita-transition) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.datavita-testimonial-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--datavita-shadow-lg) !important;
+}
+
+.datavita-quote-mark {
+  position: absolute !important;
+  top: 1.5rem !important;
+  left: 1.5rem !important;
+  font-size: 5rem !important;
+  line-height: 1 !important;
+  color: rgba(0, 0, 0, 0.05) !important;
+  font-family: Georgia, serif !important;
+}
+
+.datavita-testimonial-text {
+  font-size: 1.125rem !important;
+  margin-bottom: 2rem !important;
+  position: centre !important;
+  z-index: 1 !important;
+  font-style: italic !important;
+}
+
+.datavita-testimonial-author {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+.datavita-author-avatar {
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  background-color: #ddd !important;
+  background-image: url("/placeholder.svg?height=60&width=60") !important;
+  background-size: cover !important;
+  border: 3px solid var(--datavita-bg-white) !important;
+  box-shadow: var(--datavita-shadow-sm) !important;
+}
+
+.datavita-author-name {
+  font-weight: 700 !important;
+  margin-bottom: 0 !important;
+  font-size: 1.125rem !important;
+}
+
+.datavita-author-title {
+  color: var(--datavita-text-light) !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Pricing Section */
+.datavita-pricing {
+  padding: 8rem 0 !important;
+  background-color: var(--datavita-bg-white) !important;
+  position: relative !important;
+}
+
+.datavita-pricing::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0) 100%) !important;
+  z-index: 0 !important;
+}
+
+.datavita-pricing-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 2.5rem !important;
+  margin-top: 4rem !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.datavita-pricing-card {
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-lg) !important;
+  padding: 3rem !important;
+  box-shadow: var(--datavita-shadow-sm) !important;
+  transition: var(--datavita-transition) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  position: relative !important;
+}
+
+.datavita-pricing-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--datavita-shadow-md) !important;
+}
+
+.datavita-pricing-card.datavita-popular {
+  border: 2px solid var(--datavita-primary) !important;
+  transform: scale(1.05) !important;
+  z-index: 2 !important;
+}
+
+.datavita-pricing-card.datavita-popular:hover {
+  transform: scale(1.05) translateY(-5px) !important;
+}
+
+.datavita-popular-badge {
+  position: absolute !important;
+  top: -12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background-color: var(--datavita-primary) !important;
+  color: white !important;
+  padding: 0.25rem 1rem !important;
+  border-radius: 20px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.datavita-pricing-header {
+  text-align: center !important;
+  margin-bottom: 2.5rem !important;
+}
+
+.datavita-price {
+  font-size: 3rem !important;
+  font-weight: 800 !important;
+  color: var(--datavita-primary) !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  margin: 1.5rem 0 !important;
+}
+
+.datavita-currency {
+  font-size: 1.75rem !important;
+  margin-right: 0.25rem !important;
+}
+
+.datavita-period {
+  font-size: 1rem !important;
+  color: var(--datavita-text-light) !important;
+  font-weight: 400 !important;
+  margin-left: 0.25rem !important;
+  align-self: flex-end !important;
+}
+
+.datavita-pricing-features {
+  margin-bottom: 2.5rem !important;
+}
+
+.datavita-pricing-features li {
+  padding: 0.75rem 0 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  color: var(--datavita-text-secondary) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.datavita-pricing-features li::before {
+  content: "✓" !important;
+  margin-right: 0.75rem !important;
+  color: var(--datavita-primary) !important;
+  font-weight: bold !important;
+}
+
+.datavita-pricing-features li:last-child {
+  border-bottom: none !important;
+}
+
+/* CTA Section */
+.datavita-cta {
+  padding: 8rem 0 !important;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%) !important;
+  color: white !important;
+  text-align: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.datavita-cta::before {
+  content: "" !important;
+  position: absolute !important;
+  top: -50% !important;
+  left: -50% !important;
+  width: 200% !important;
+  height: 200% !important;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 50%) !important;
+  z-index: 0 !important;
+}
+
+.datavita-cta-content {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.datavita-cta h2 {
+  margin-bottom: 1.5rem !important;
+  font-size: clamp(2rem, 4vw, 3.5rem) !important;
+  color: white !important;
+}
+
+.datavita-cta p {
+  margin-bottom: 2.5rem !important;
+  max-width: 600px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  font-size: 1.25rem !important;
+  opacity: 0.9 !important;
+  color: white !important;
+}
+
+.datavita-cta .datavita-btn-primary {
+  background-color: white !important;
+  color: var(--datavita-primary) !important;
+}
+
+.datavita-cta .datavita-btn-primary:hover {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Footer */
+.datavita-footer {
+  padding: 6rem 0 2rem !important;
+  background-color: var(--datavita-bg-dark) !important;
+  color: white !important;
+  position: relative !important;
+}
+
+.datavita-footer-top {
+  display: grid !important;
+  grid-template-columns: 1fr 2fr !important;
+  gap: 4rem !important;
+  margin-bottom: 4rem !important;
+}
+
+.datavita-footer-brand p {
+  color: rgba(255, 255, 255, 0.7) !important;
+  margin-top: 1.5rem !important;
+  max-width: 300px !important;
+}
+
+.datavita-footer-links {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 2.5rem !important;
+}
+
+.datavita-footer-links-column h4 {
+  font-size: 1.25rem !important;
+  margin-bottom: 1.5rem !important;
+  color: white !important;
+  position: relative !important;
+  display: inline-block !important;
+}
+
+.datavita-footer-links-column h4::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: -8px !important;
+  left: 0 !important;
+  width: 30px !important;
+  height: 2px !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.datavita-footer-links-column a {
+  display: block !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  margin-bottom: 0.75rem !important;
+  transition: var(--datavita-transition) !important;
+  text-decoration: none !important;
+}
+
+.datavita-footer-links-column a:hover {
+  color: white !important;
+  transform: translateX(5px) !important;
+}
+
+.datavita-footer-bottom {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding-top: 2rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.datavita-social-links {
+  display: flex !important;
+  gap: 1.5rem !important;
+}
+
+.datavita-social-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: var(--datavita-transition) !important;
+  text-decoration: none !important;
+}
+
+.datavita-social-link:hover {
+  color: white !important;
+}
+
+.datavita-watermark {
+  position: absolute !important;
+  bottom: 1rem !important;
+  right: 1rem !important;
+  font-size: 0.75rem !important;
+  opacity: 0.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+}
+
+/* Animation Classes */
+.datavita-fade-in {
+  opacity: 0 !important;
+  transform: translateY(30px) !important;
+  transition: opacity 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.datavita-fade-in-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Base styling for smooth animations */
+.datavita-slide-in {
+  opacity: 0 !important;
+  font-family: "Poppins", sans-serif; /* Clean and modern font */
+  font-size: 1.2rem; /* Slightly larger font for readability */
+  font-weight: 500; /* Medium weight for a balanced look */
+  letter-spacing: 0.5px; /* Slight spacing for better aesthetics */
+  transition: opacity 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+/* Slide-in animations from different directions */
+.datavita-slide-in.datavita-from-left {
+  transform: translateX(-50px) !important;
+}
+
+.datavita-slide-in.datavita-from-right {
+  transform: translateX(50px) !important;
+}
+
+.datavita-slide-in.datavita-from-bottom {
+  transform: translateY(50px) !important;
+}
+
+/* Make text visible when scrolled into view */
+.datavita-slide-in.visible {
+  opacity: 1 !important;
+  transform: translateX(0) translateY(0) !important;
+}
+
+/* Typing Effect */
+.typing-text::after {
+  content: "|";
+  display: inline-block;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.datavita-slide-in-visible {
+  opacity: 1 !important;
+  transform: translateX(0) translateY(0) !important;
+}
+
+.datavita-delay-200 {
+  transition-delay: 0.2s !important;
+}
+
+.datavita-delay-400 {
+  transition-delay: 0.4s !important;
+}
+
+.datavita-delay-600 {
+  transition-delay: 0.6s !important;
+}
+
+.datavita-stagger-item {
+  opacity: 0 !important;
+  transform: translateY(30px) !important;
+  transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.datavita-stagger-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Dashboard Section */
+.datavita-dashboard-section {
+  padding: 8rem 0 !important;
+  background-color: var(--datavita-bg-light) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.datavita-dashboard-showcase {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 4rem !important;
+  align-items: center !important;
+  margin-top: 3rem !important;
+}
+
+.datavita-dashboard-image {
+  position: relative !important;
+  height: 400px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.datavita-dashboard-floating {
+  width: 90% !important;
+  height: 90% !important;
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-lg) !important;
+  box-shadow: var(--datavita-shadow-lg) !important;
+  overflow: hidden !important;
+  animation: datavitaFloat 8s ease-in-out infinite !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.datavita-dashboard-screen {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.datavita-dashboard-header-bar {
+  height: 40px !important;
+  background-color: var(--datavita-bg-dark) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 1rem !important;
+}
+
+.datavita-dashboard-content {
+  flex: 1 !important;
+  background-color: var(--datavita-bg-light) !important;
+  padding: 1rem !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: repeat(3, 1fr) !important;
+  gap: 1rem !important;
+}
+
+.datavita-dashboard-widget {
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-md) !important;
+  box-shadow: var(--datavita-shadow-sm) !important;
+}
+
+.datavita-dashboard-widget-large {
+  grid-column: span 2 !important;
+  background-color: var(--datavita-bg-white) !important;
+  border-radius: var(--datavita-radius-md) !important;
+  box-shadow: var(--datavita-shadow-sm) !important;
+}
+
+.datavita-dashboard-info {
+  max-width: 500px !important;
+}
+
+.datavita-dashboard-info h3 {
+  font-size: 2rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.datavita-dashboard-features {
+  margin: 1.5rem 0 2rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.datavita-dashboard-features li {
+  margin-bottom: 0.75rem !important;
+  position: relative !important;
+  padding-left: 1.5rem !important;
+}
+
+.datavita-dashboard-features li::before {
+  content: "✓" !important;
+  position: absolute !important;
+  left: 0 !important;
+  color: var(--datavita-primary) !important;
+  font-weight: bold !important;
+}
+
+.datavita-dashboard-cta {
+  margin-top: 2rem !important;
+}
+
+/* Playground Section */
+.datavita-playground-section {
+  padding: 8rem 0 !important;
+  background-color: var(--datavita-bg-white) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.datavita-playground-showcase {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 4rem !important;
+  align-items: center !important;
+  margin-top: 3rem !important;
+}
+
+.datavita-playground-image {
+  position: relative !important;
+  height: 400px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.datavita-playground-floating {
+  width: 90% !important;
+  height: 90% !important;
+  background-color: var(--datavita-bg-dark) !important;
+  border-radius: var(--datavita-radius-lg) !important;
+  box-shadow: var(--datavita-shadow-lg) !important;
+  overflow: hidden !important;
+  animation: datavitaFloat 8s ease-in-out infinite 1s !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.datavita-code-editor {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  color: white !important;
+}
+
+.datavita-editor-header {
+  height: 40px !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 1rem !important;
+}
+
+.datavita-editor-tabs {
+  display: flex !important;
+  gap: 0.5rem !important;
+}
+
+.datavita-editor-tab {
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 4px 4px 0 0 !important;
+  font-size: 0.8rem !important;
+  cursor: pointer !important;
+}
+
+.datavita-editor-tab.datavita-active {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.datavita-editor-content {
+  flex: 1 !important;
+  padding: 1rem !important;
+  font-family: monospace !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+  overflow: auto !important;
+}
+
+.datavita-code-line {
+  display: flex !important;
+  gap: 1rem !important;
+  white-space: pre !important;
+}
+
+.datavita-line-number {
+  opacity: 0.5 !important;
+  min-width: 2rem !important;
+  text-align: right !important;
+}
+
+.datavita-code-keyword {
+  color: #ff79c6 !important;
+}
+
+.datavita-code-string {
+  color: #f1fa8c !important;
+}
+
+.datavita-code-comment {
+  color: #6272a4 !important;
+}
+
+.datavita-playground-info {
+  max-width: 500px !important;
+}
+
+.datavita-playground-info h3 {
+  font-size: 2rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.datavita-playground-features {
+  margin: 1.5rem 0 2rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.datavita-playground-features li {
+  margin-bottom: 0.75rem !important;
+  position: relative !important;
+  padding-left: 1.5rem !important;
+}
+
+.datavita-playground-features li::before {
+  content: "✓" !important;
+  position: absolute !important;
+  left: 0 !important;
+  color: var(--datavita-primary) !important;
+  font-weight: bold !important;
+}
+
+.datavita-playground-cta {
+  margin-top: 2rem !important;
+}
+
+/* Mobile Menu */
+@media (max-width: 768px) {
+  .datavita-nav-links {
+    position: fixed !important;
+    top: 0 !important;
+    right: -100% !important;
+    width: 80% !important;
+    max-width: 300px !important;
+    height: 100vh !important;
+    background-color: var(--datavita-bg-white) !important;
+    flex-direction: column !important;
+    padding: 5rem 2rem 2rem !important;
+    box-shadow: var(--datavita-shadow-lg) !important;
+    transition: right 0.3s ease !important;
+    z-index: 1000 !important;
+  }
+
+  .datavita-nav-links.datavita-mobile-open {
+    right: 0 !important;
+  }
+
+  .datavita-mobile-menu-btn {
+    display: flex !important;
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .datavita-hero .datavita-container {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+  }
+
+  .datavita-hero-content {
+    margin: 0 auto !important;
+  }
+
+  .datavita-cta-buttons {
+    justify-content: center !important;
+  }
+
+  .datavita-footer-top {
+    grid-template-columns: 1fr !important;
+    gap: 3rem !important;
+  }
+
+  .datavita-dashboard-showcase,
+  .datavita-playground-showcase {
+    grid-template-columns: 1fr !important;
+    gap: 3rem !important;
+  }
+
+  .datavita-dashboard-info,
+  .datavita-playground-info {
+    order: 1 !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+  }
+
+  .datavita-dashboard-image,
+  .datavita-playground-image {
+    order: 2 !important;
+  }
+
+  .datavita-dashboard-features,
+  .datavita-playground-features {
+    text-align: left !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .datavita-auth-buttons {
+    display: none !important;
+  }
+
+  .datavita-pricing-grid {
+    grid-template-columns: 1fr !important;
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .datavita-pricing-card.datavita-popular {
+    transform: scale(1) !important;
+  }
+
+  .datavita-pricing-card.datavita-popular:hover {
+    transform: translateY(-5px) !important;
+  }
+
+  .datavita-footer-links {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .datavita-footer-bottom {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .datavita-cta-buttons {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .datavita-footer-links {
+    grid-template-columns: 1fr !important;
+  }
+
+  .datavita-hero {
+    padding: 10rem 0 6rem !important;
+  }
+
+  .datavita-feature-grid,
+  .datavita-testimonial-slider {
+    gap: 1.5rem !important;
+  }
+
+  .datavita-pricing-card,
+  .datavita-testimonial-card,
+  .datavita-feature-card {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Ensure content is always scrollable */
+html,
+body {
+  min-height: 100% !important;
+  overflow-y: auto !important;
+}
+
+.datavita-landing-page {
+  position: relative !important;
+  overflow: visible !important;
+  min-height: 100vh !important;
+}
+
+/* Additional smooth scroll enhancements */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth !important;
+  }
+
+  .datavita-scroll-link {
+    scroll-margin-top: 100px !important;
+  }
+}
+

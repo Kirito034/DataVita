@@ -1,0 +1,137 @@
+/* File Item Styles */
+.file-item {
+    position: relative;
+    user-select: none;
+  }
+  
+  .file-item-content {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .file-item-content:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .file-item.selected .file-item-content {
+    background-color: #e3f2fd;
+  }
+  
+  .toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    color: #757575;
+  }
+  
+  .item-icon {
+    margin-right: 8px;
+  }
+  
+  .item-icon.folder {
+    color: #ffc107;
+  }
+  
+  .item-icon.python {
+    color: #3572a5;
+  }
+  
+  .item-icon.js {
+    color: #f7df1e;
+  }
+  
+  .item-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+  }
+  
+  .item-indicators {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+  }
+  
+  .shared-icon {
+    color: #2196f3;
+  }
+  
+  .lock-icon {
+    color: #f44336;
+  }
+  
+  .permission-icon {
+    color: #757575;
+  }
+  
+  .permission-icon.view {
+    color: #4caf50;
+  }
+  
+  .permission-icon.edit {
+    color: #ff9800;
+  }
+  
+  .permission-icon.run {
+    color: #9c27b0;
+  }
+  
+  .permission-icon.full {
+    color: #2196f3;
+  }
+  
+  /* Shared file styling */
+  .file-item.shared .item-name {
+    font-weight: 500;
+  }
+  
+  /* Dark mode styles */
+  .dark .file-item-content:hover {
+    background-color: #2a2a2a;
+  }
+  
+  .dark .file-item.selected .file-item-content {
+    background-color: #0d2b45;
+  }
+  
+  .dark .toggle-icon {
+    color: #aaa;
+  }
+  
+  .dark .item-icon.folder {
+    color: #ffd54f;
+  }
+  
+  .dark .item-name {
+    color: #e0e0e0;
+  }
+  
+  .dark .permission-icon {
+    color: #aaa;
+  }
+  
+  .dark .permission-icon.view {
+    color: #81c784;
+  }
+  
+  .dark .permission-icon.edit {
+    color: #ffb74d;
+  }
+  
+  .dark .permission-icon.run {
+    color: #ce93d8;
+  }
+  
+  .dark .permission-icon.full {
+    color: #64b5f6;
+}

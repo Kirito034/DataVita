@@ -1,0 +1,360 @@
+.share-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .share-modal {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 500px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .share-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .share-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  
+  .close-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .share-modal-search {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .search-icon {
+    color: #666;
+    margin-right: 8px;
+  }
+  
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 8px 0;
+  }
+  
+  .share-modal-error {
+    margin: 8px 20px;
+    padding: 8px 12px;
+    background-color: #ffebee;
+    color: #d32f2f;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .share-modal-users {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+  
+  .loading-indicator,
+  .no-users-found {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .user-item {
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .user-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .user-item.selected {
+    background-color: #f0f7ff;
+  }
+  
+  .user-item.already-shared {
+    background-color: #f0f0f0;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #666;
+  }
+  
+  .user-details {
+    flex: 1;
+  }
+  
+  .user-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .user-email {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .user-selection {
+    display: flex;
+    align-items: center;
+  }
+  
+  .check-icon {
+    color: #2196f3;
+  }
+  
+  .permission-selector {
+    display: flex;
+    margin-top: 8px;
+    margin-left: 44px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .permission-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .permission-option:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .permission-option.active {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .permission-option span {
+    margin-top: 4px;
+    text-transform: capitalize;
+  }
+  
+  .share-modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .selected-count {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .cancel-button {
+    padding: 8px 16px;
+    background: none;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .cancel-button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .share-button {
+    padding: 8px 16px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .share-button:hover {
+    background-color: #1976d2;
+  }
+  
+  .share-button:disabled {
+    background-color: #bbdefb;
+    cursor: not-allowed;
+  }
+  
+  /* Dark mode styles */
+  .dark .share-modal {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
+  
+  .dark .share-modal-header {
+    border-bottom-color: #333;
+  }
+  
+  .dark .share-modal-header h2 {
+    color: #e0e0e0;
+  }
+  
+  .dark .close-button {
+    color: #aaa;
+  }
+  
+  .dark .close-button:hover {
+    background-color: #333;
+    color: #fff;
+  }
+  
+  .dark .share-modal-search {
+    border-bottom-color: #333;
+  }
+  
+  .dark .search-icon {
+    color: #aaa;
+  }
+  
+  .dark .search-input {
+    color: #e0e0e0;
+    background-color: transparent;
+  }
+  
+  .dark .share-modal-error {
+    background-color: #4a1515;
+    color: #ff8a80;
+  }
+  
+  .dark .loading-indicator,
+  .dark .no-users-found {
+    color: #aaa;
+  }
+  
+  .dark .user-item:hover {
+    background-color: #2a2a2a;
+  }
+  
+  .dark .user-item.selected {
+    background-color: #0d2b45;
+  }
+  
+  .dark .user-item.already-shared {
+    background-color: #2a2a2a;
+  }
+  
+  .dark .user-avatar {
+    background-color: #333;
+    color: #aaa;
+  }
+  
+  .dark .user-name {
+    color: #e0e0e0;
+  }
+  
+  .dark .user-email {
+    color: #aaa;
+  }
+  
+  .dark .permission-selector {
+    background-color: #2a2a2a;
+  }
+  
+  .dark .permission-option {
+    color: #aaa;
+  }
+  
+  .dark .permission-option:hover {
+    background-color: #333;
+  }
+  
+  .dark .permission-option.active {
+    background-color: #1565c0;
+  }
+  
+  .dark .share-modal-footer {
+    border-top-color: #333;
+  }
+  
+  .dark .selected-count {
+    color: #aaa;
+  }
+  
+  .dark .cancel-button {
+    border-color: #444;
+    color: #aaa;
+  }
+  
+  .dark .cancel-button:hover {
+    background-color: #2a2a2a;
+  }
+  
+  .dark .share-button {
+    background-color: #1976d2;
+  }
+  
+  .dark .share-button:hover {
+    background-color: #1565c0;
+  }
+  
+  .dark .share-button:disabled {
+    background-color: #0d47a1;
+    opacity: 0.5;
+  }

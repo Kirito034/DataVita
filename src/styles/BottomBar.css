@@ -1,0 +1,70 @@
+/* Bottom bar */
+.bottom-bar {
+    background-color: rgba(15, 15, 15, 0.9); /* Dark monochrome background */
+    color: #dcdcdc; /* Soft white text for readability */
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px); /* Subtle blur effect */
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Input field */
+.bottom-bar input {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(30, 30, 30, 0.8); /* Dark input background */
+    color: #ffffff;
+    font-family: 'Calibre', sans-serif;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.bottom-bar input:focus {
+    background-color: rgba(50, 50, 50, 0.9);
+    outline: none;
+}
+
+/* Button styling */
+.bottom-bar button {
+    background: linear-gradient(135deg, #444, #222);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+}
+
+/* Disabled button */
+.bottom-bar button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+/* Button hover effect */
+.bottom-bar button:hover {
+    background: #ffffff;
+    color: #111;
+    transform: scale(1.05);
+}
+
+/* Output styling */
+.output {
+    margin-top: 10px;
+    padding: 8px;
+    color: #dcdcdc;
+    font-size: 14px;
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
