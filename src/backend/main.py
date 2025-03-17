@@ -5,7 +5,6 @@ from routes.python_routes import python_bp  # Python routes blueprint
 from routes.Pyspark_routes import pyspark_bp  # PySpark routes blueprint
 from routes.sql_routes import sql_bp
 from core.auth import auth_bp
-from routes.dashboard import dashboard_bp
 from scripts import scan_and_store_files
 from core.utils import get_db_connection
 from datetime import datetime
@@ -32,20 +31,18 @@ app = Flask(__name__)
 # Allow CORS for the React frontend (localhost:5173)
 from flask_cors import CORS
 
-CORS(app, resources={
-    r"/*": {
-        "origins": "*",  # ✅ Ensure this is correct
-        "supports_credentials": True,
-        "methods": ["GET", "POST", "OPTIONS", "DELETE", "PUT"],  # ✅ Include PUT if needed
-        "allow_headers": [
-            "Content-Type",
-            "Authorization",
-            "X-Requested-With",
-            "X-User-Id",       # ✅ Custom headers must match frontend requests
-            "X-User-FullName"
-        ]
-    }
-})
+CORS(app, resources={r"/*": {
+    "origins": "http://localhost:5173",
+    "supports_credentials": True,
+    "methods": ["GET", "POST", "OPTIONS", "DELETE"],
+    "allow_headers": [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-User-Id",       # ✅ Add this
+        "X-User-FullName"  # ✅ Add this
+    ]
+}})
 
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
  
@@ -55,7 +52,6 @@ app.register_blueprint(pyspark_bp, url_prefix='/pyspark')
 app.register_blueprint(sql_bp, url_prefix='/sql')
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(scripts_bp, url_prefix="/scripts")
-app.register_blueprint(dashboard_bp, url_prefix="/dashboards")
 # Placeholder for notebook state (You can implement this with a DB in a real-world scenario)
 notebook_state = {}
  
@@ -733,15 +729,7 @@ def save_file():
         return jsonify({"message": "File saved successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:amanossan1@localhost/compiler_db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_size": 20,        # Default is 5, increase to 20
-    "max_overflow": 30,     # Allow up to 30 extra connections
-    "pool_timeout": 60,     # Wait 60s before failing connection
-    "pool_recycle": 1800    # Recycle connections every 30 min
-}
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:amanossan1@localhost/compiler_db'  # Replace with your DB credentials
 db = SQLAlchemy(app)
 db.init_app(app)
 # Define the VersionHistory model

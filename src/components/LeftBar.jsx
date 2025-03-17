@@ -1,32 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import {
-  ChevronDown,
-  ChevronRight,
-  File,
-  Folder,
-  Database,
-  Table,
-  Download,
-  Search,
-  Plus,
-  FileText,
-  FilePlus,
-  Trash,
-  Edit,
-  FileCode,
-  RefreshCw,
-  X,
-  Laptop,
-  Clock,
-  User,
-  Calendar,
-  FileType,
-  AlertTriangle,
-  Shield,
-  Share2,
-} from "lucide-react"
+import { ChevronDown, ChevronRight, File, Folder, Database, Table, Download, Search, Plus, FileText, FilePlus, FolderPlus, Trash, Edit, FileCode, RefreshCw, X, Laptop, ChevronLeft, Menu, Clock, User, Calendar, FileType } from 'lucide-react'
 import {
   fetchFileStructure,
   createItem,
@@ -38,9 +13,6 @@ import {
 } from "../services/api"
 import { CustomAlert } from "./ui/custom-alert"
 import { formatDate } from "./utils/date-utils"
-import FileItem from "./script/FileItem"
-import ShareModal from "./script/ShareModal"
-import CollaborationBadge from "./script/CollaborationBadge"
 import "../styles/leftbar.css"
 
 /**
@@ -53,7 +25,6 @@ import "../styles/leftbar.css"
  * - File metadata display
  * - Context menu for file operations
  * - Resizable and collapsible interface
- * - File sharing capabilities with permission levels
  *
  * @param {Object} props - Component props
  * @param {Function} props.onOpenFile - Callback when a file is opened
@@ -70,7 +41,7 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
   const [selectedItem, setSelectedItem] = useState(null)
 
   // UI control states
-  const [viewMode, setViewMode] = useState("file-manager") // file-manager, object-explorer, scripts
+  const [viewMode, setViewMode] = useState("file-manager") // file-manager, object-explorer
   const [contextMenu, setContextMenu] = useState(null)
   const [selectedFolderPath, setSelectedFolderPath] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
@@ -79,15 +50,6 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
-
-  // User information
-  const [currentUserId, setCurrentUserId] = useState("")
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [currentUserFullName, setCurrentUserFullName] = useState("")
-
-  // File sharing states
-  const [showSharingModal, setShowSharingModal] = useState(false)
-  const [fileToShare, setFileToShare] = useState(null)
 
   // Refs for DOM manipulation
   const searchInputRef = useRef(null)
@@ -105,22 +67,6 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
   useEffect(() => {
     loadFileStructure()
     loadMetadata()
-
-    // Load user information from localStorage with correct column names
-    const id = localStorage.getItem("id")
-    const role = localStorage.getItem("role")
-    const full_name = localStorage.getItem("full_name")
-
-    console.log("Current User Info:", {
-      id,
-      role,
-      full_name,
-      isAdmin: role === "admin"
-    })
-
-    setCurrentUserId(id || "")
-    setIsAdmin(role === "admin")
-    setCurrentUserFullName(full_name || "")
 
     // Handle clicks outside context menu
     const handleClickOutside = (e) => {
@@ -289,34 +235,8 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
    */
   const handleRightClick = (event, item) => {
     event.preventDefault()
-    event.stopPropagation()
-
-    // Get current user info
-    const userId = localStorage.getItem("id")
-    const userRole = localStorage.getItem("role")
-    const userFullName = localStorage.getItem("full_name")
-
-    // Check if this is a script file
-    const isScript = item.type === "file" && isNotebookFile(item.name)
-
-    // Check if user is the creator
-    const isCreator = String(item.created_by) === String(userId) || 
-                     item.created_by_full_name === userFullName
-
-    // Determine if sharing option should be shown (only for creators and admins)
-    const canShare = isScript && (isCreator || userRole === "admin")
-
-    // Check if user has access to this file
-    const hasAccess = hasAccessToFile(item)
-
-    setContextMenu({
-      x: event.clientX,
-      y: event.clientY,
-      item,
-      canShare,
-      hasAccess
-    })
-
+    event.stopPropagation() // Prevent event bubbling
+    setContextMenu({ x: event.clientX, y: event.clientY, item })
     setSelectedFolderPath(item.path || "")
     setSelectedItem(item)
   }
@@ -383,7 +303,7 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
 
   /**
    * Handle context menu option clicks
-   * @param {string} action - The action to perform (create, rename, delete, share)
+   * @param {string} action - The action to perform (create, rename, delete)
    * @param {Object} item - The item to perform the action on
    */
   const handleOptionClick = async (action, item = null) => {
@@ -391,189 +311,78 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
     if (!targetItem) return
 
     try {
-      // Check if user has permission to modify the file
-      if (!hasAccessToFile(targetItem)) {
-        throw new Error('Access denied. Only the file creator or admin can modify this file.')
-      }
-
       setIsLoading(true)
 
-      switch (action) {
-        case "create":
-          const name = await showPrompt("Enter name:")
-          if (!name) return
+      if (action === "create") {
+        const name = await showPrompt("Enter name:")
+        if (!name) return
 
-          const type = await showPrompt("Enter type: 'file' or 'folder':")
-          if (!type || !["file", "folder"].includes(type.toLowerCase())) {
-            throw new Error("Type must be either 'file' or 'folder'.")
-          }
-
-          const targetPath = targetItem.type === "folder" 
-            ? `${targetItem.path}/${targetItem.name}`
-            : targetItem.path
-
-          await createItem(targetPath, name, type.toLowerCase())
+        const type = await showPrompt("Enter type: 'file' or 'folder':")
+        if (!type || !["file", "folder"].includes(type.toLowerCase())) {
           setAlert({
-            type: "success",
-            title: "Item Created",
-            message: `Successfully created ${type}: ${name}`,
+            type: "error",
+            title: "Invalid Type",
+            message: "Type must be either 'file' or 'folder'.",
           })
-          break
+          return
+        }
 
-        case "rename":
-          const newName = await showPrompt("Enter new name:", targetItem.name)
-          if (!newName || newName === targetItem.name) return
+        let targetPath = targetItem.path
+        if (targetItem.type === "folder") {
+          targetPath = `${targetPath}/${targetItem.name}`
+        }
 
-          await renameItem(targetItem.path, targetItem.name, newName)
-          setAlert({
-            type: "success",
-            title: "Item Renamed",
-            message: `Successfully renamed to: ${newName}`,
-          })
-          break
+        await createItem(targetPath, name, type.toLowerCase())
 
-        case "delete":
-          const confirmed = window.confirm(`Are you sure you want to delete ${targetItem.name}?`)
-          if (!confirmed) return
+        setAlert({
+          type: "success",
+          title: "Item Created",
+          message: `Successfully created ${type}: ${name}`,
+        })
+      } else if (action === "rename") {
+        const newName = await showPrompt("Enter new name:", targetItem.name)
+        if (!newName || newName === targetItem.name) return
 
-          await deleteItem(targetItem.path, targetItem.name)
-          setAlert({
-            type: "success",
-            title: "Item Deleted",
-            message: `Successfully deleted: ${targetItem.name}`,
-          })
-          break
+        await renameItem(targetItem.path, targetItem.name, newName)
 
-        case "share":
-          // Open sharing modal
-          setFileToShare(targetItem)
-          setShowSharingModal(true)
-          break
+        setAlert({
+          type: "success",
+          title: "Item Renamed",
+          message: `Successfully renamed to: ${newName}`,
+        })
+      } else if (action === "delete") {
+        const confirmed = window.confirm(`Are you sure you want to delete ${targetItem.name}?`)
+        if (!confirmed) return
+
+        await deleteItem(targetItem.path, targetItem.name)
+
+        setAlert({
+          type: "success",
+          title: "Item Deleted",
+          message: `Successfully deleted: ${targetItem.name}`,
+        })
       }
 
       await loadFileStructure()
     } catch (error) {
       console.error(`Error during ${action}:`, error)
+
+      // Sanitize error message
+      const errorMessage =
+        error.message && error.message.includes("localhost")
+          ? "An unexpected error occurred. Please try again."
+          : error.message || `Failed to ${action} item`
+
       setAlert({
         type: "error",
-        title: "Access Denied",
-        message: error.message || "Only the file creator or admin can perform this action",
+        title: `${action.charAt(0).toUpperCase() + action.slice(1)} Failed`,
+        message: errorMessage,
       })
     } finally {
       setIsLoading(false)
-      setContextMenu(null)
-    }
-  }
-
-  /**
-   * Handle file sharing update
-   */
-  const handleShareUpdate = async () => {
-    await loadFileStructure()
-    setAlert({
-      type: "success",
-      title: "File Shared",
-      message: "File sharing settings updated successfully.",
-    })
-  }
-
-  /**
-   * Check if the current user has access to a file
-   * @param {Object} file - The file to check access for
-   * @returns {boolean} - True if the user has access
-   */
-  const hasAccessToFile = (file) => {
-    // Get current user info from localStorage
-    const userRole = localStorage.getItem("role")
-    const userId = localStorage.getItem("id")
-    const userFullName = localStorage.getItem("full_name")
-
-    console.log("Access Check:", {
-      userRole,
-      userId,
-      userFullName,
-      fileCreatorId: file.created_by,
-      fileCreatorName: file.created_by_full_name,
-      isAdmin: userRole === "admin"
-    })
-
-    // Admin has access to all files
-    if (userRole === "admin") {
-      console.log("Access granted: User is admin")
-      return true
     }
 
-    // For non-admin users, check if they are the creator
-    // Convert IDs to strings for comparison
-    const fileCreatorId = String(file.created_by || "")
-    const currentUserId = String(userId || "")
-
-    // Check if user is the creator by ID
-    const isCreatorById = fileCreatorId === currentUserId
-    
-    // Check if user is the creator by full name
-    const isCreatorByName = file.created_by_full_name === userFullName
-
-    // Check if the file is shared with the user
-    const isSharedWithUser = Array.isArray(file.shared_with) && 
-      file.shared_with.some(user => 
-        String(user.id) === currentUserId || 
-        user.full_name === userFullName
-      )
-
-    if (isCreatorById || isCreatorByName) {
-      console.log("Access granted: User is creator")
-      return true
-    }
-
-    if (isSharedWithUser) {
-      console.log("Access granted: File is shared with user")
-      return true
-    }
-
-    console.log("Access denied: User has no permission", {
-      isCreatorById,
-      isCreatorByName,
-      isSharedWithUser
-    })
-    return false
-  }
-
-  /**
-   * Get the permission level for the current user
-   * @param {Object} file - The file to check permissions for
-   * @returns {string|null} - The permission level or null if no access
-   */
-  const getUserPermission = (file) => {
-    // Get current user info from localStorage
-    const userRole = localStorage.getItem("role")
-    const userId = localStorage.getItem("id")
-    const userFullName = localStorage.getItem("full_name")
-
-    // Admin has full access to all files
-    if (userRole === "admin") {
-      return "full"
-    }
-
-    // Convert IDs to strings for comparison
-    const fileCreatorId = String(file.created_by || "")
-    const currentUserId = String(userId || "")
-
-    // Creator has full access
-    if (fileCreatorId === currentUserId || file.created_by_full_name === userFullName) {
-      return "full"
-    }
-
-    // Check if the file is shared with the user
-    if (Array.isArray(file.shared_with) && 
-        file.shared_with.some(user => 
-          String(user.id) === currentUserId || 
-          user.full_name === userFullName
-        )) {
-      return "read" // Shared users get read access
-    }
-
-    return null // No access
+    setContextMenu(null)
   }
 
   /**
@@ -582,49 +391,31 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
    */
   const handleFileDoubleClick = async (file) => {
     try {
-      if (!file?.path) {
-        throw new Error('Invalid file data')
-      }
+      setIsLoading(true)
+      const response = await fetch(`/api/files?path=${encodeURIComponent(file.path)}`)
+      if (!response.ok) throw new Error("Failed to load file")
+      const content = await response.text()
 
-      console.log("Checking file access:", {
-        isAdmin,
-        file,
-        currentUserId: localStorage.getItem("id"),
-        userRole: localStorage.getItem("role"),
-        userFullName: localStorage.getItem("full_name")
+      // Check if it's a notebook file
+      const extension = file.name.split(".").pop().toLowerCase()
+      const isNotebook = ["py", "ipynb"].includes(extension)
+
+      // Call the parent component's onOpenFile callback with appropriate type
+      onOpenFile({
+        ...file,
+        content,
+        type: isNotebook ? "notebook" : "file",
       })
 
-      // Check if user has access (admin or creator)
-      if (!hasAccessToFile(file)) {
-        throw new Error('Access denied. Only the file creator or admin can access this file.')
-      }
-
-      // If it's a notebook file, handle it
-      if (isNotebookFile(file.name)) {
-        const response = await fetch(`/api/files?path=${encodeURIComponent(file.path)}`)
-        if (!response.ok) throw new Error("Failed to load file")
-        const content = await response.text()
-
-        if (onOpenFile) {
-          onOpenFile({
-            ...file,
-            content,
-            type: "notebook",
-            permission: "full", // Admin or creator always gets full permission
-          })
-        }
-        return
-      }
-
-      // For other files, handle differently
-      console.log("Opening non-notebook file:", file.name)
+      setIsLoading(false)
     } catch (error) {
-      console.error("Error handling file double click:", error)
+      console.error("Error loading file:", error)
       setAlert({
         type: "error",
-        title: "Access Denied",
-        message: error.message || "You don't have permission to access this file",
+        title: "File Load Failed",
+        message: "Failed to load file content. Please try again.",
       })
+      setIsLoading(false)
     }
   }
 
@@ -676,35 +467,36 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
       const hasChildren = item.type === "folder" && item.children && item.children.length > 0
       const isSelected = selectedItem && selectedItem.path === item.path && selectedItem.name === item.name
 
-      // Check if this is a script file that requires access control
-      const isScript = item.type === "file" && isNotebookFile(item.name)
-
-      // For script files, check if the current user has access
-      const hasAccess = !isScript || hasAccessToFile(item)
-
-      // Get user's permission for this file
-      const permission = getUserPermission(item)
-
       return (
-        <FileItem
+        <div
           key={itemPath}
-          item={{
-            ...item,
-            permission,
-          }}
-          isExpanded={isExpanded}
-          onToggle={() => toggleFolder(itemPath)}
-          onClick={() => {
-            setSelectedItem(item)
-            if (item.type === "folder") {
-              toggleFolder(itemPath)
-            }
-          }}
-          onDoubleClick={() => item.type === "file" && handleFileDoubleClick(item)}
-          onContextMenu={(e) => handleRightClick(e, item)}
-          isSelected={isSelected}
-          depth={depth}
-        />
+          className={`tree-item ${item.type} ${isSelected ? "selected" : ""}`}
+          style={{ paddingLeft: `${depth * 12}px` }}
+        >
+          <div
+            className="tree-item-content"
+            onContextMenu={(e) => handleRightClick(e, item)}
+            onClick={() => {
+              setSelectedItem(item)
+              if (item.type === "folder") {
+                toggleFolder(itemPath)
+              }
+            }}
+            onDoubleClick={() => item.type === "file" && handleFileDoubleClick(item)}
+          >
+            {item.type === "folder" && (
+              <span className="folder-toggle">
+                {hasChildren && (isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+              </span>
+            )}
+            {getItemIcon(item)}
+            <span className="item-name">{item.name}</span>
+          </div>
+
+          {item.type === "folder" && isExpanded && item.children && (
+            <div className="nested-items">{renderFileTree(item.children, depth + 1)}</div>
+          )}
+        </div>
       )
     })
   }
@@ -856,39 +648,38 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
   )
 
   // Get scripts from file structure (Python and notebook files)
-  const getScripts = (items, scripts = []) => {
+const getScripts = (items, scripts = []) => {
     // 🔹 Retrieve user details from localStorage
-    const userId = localStorage.getItem("id") || "1" // Default: 1
-    const userFullName = localStorage.getItem("full_name") || "Unknown User"
-  
+    const userId = localStorage.getItem("user_id") || "1";  // Default: 1
+    const userFullName = localStorage.getItem("user_full_name") || "Unknown User";
+
     items.forEach((item) => {
-      if (item.type === "file") {
-        const extension = item.name.split(".").pop().toLowerCase()
-  
-        if (["py", "ipynb"].includes(extension)) {
-          scripts.push({
-            ...item,
-            extension,
-            createdAt: item.created_at || null, // ✅ Ensure backend timestamp is used
-            lastModifiedAt: item.modified_at || null, // ✅ Ensure backend timestamp is used
-            
-            // ✅ Only override if `created_by` is missing
-            createdBy: item.created_by || userFullName,
-  
-            // ✅ Only override if `modified_by` is missing
-            lastModifiedBy: item.modified_by || userFullName,
-          })
+        if (item.type === "file") {
+            const extension = item.name.split(".").pop().toLowerCase();
+            if (["py", "ipynb"].includes(extension)) {
+                scripts.push({
+                    ...item,
+                    extension,
+                    createdAt: item.created_at || null,  // ✅ Ensure backend timestamp is used
+                    lastModifiedAt: item.modified_at || null,  // ✅ Ensure backend timestamp is used
+                    
+                    // ✅ Only override if `created_by` is missing
+                    createdBy: item.created_by ? item.created_by : userFullName,
+
+                    // ✅ Only override if `modified_by` is missing
+                    lastModifiedBy: item.modified_by ? item.modified_by : userFullName,
+                });
+            }
         }
-      }
-  
-      if (item.type === "folder" && item.children) {
-        getScripts(item.children, scripts)
-      }
-    })
-  
-    return scripts
-  }
-  
+
+        if (item.type === "folder" && item.children) {
+            getScripts(item.children, scripts);
+        }
+    });
+
+    return scripts; // ✅ Ensure the function returns processed scripts
+};
+
   const scripts = getScripts(fileStructure)
   const filteredScripts = scripts.filter((script) => script.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -900,17 +691,6 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
     if (!selectedItem) return null
 
     const extension = selectedItem.name.split(".").pop().toLowerCase()
-    const isScript = ["py", "ipynb"].includes(extension)
-
-    // For script files, check if the current user has access
-    const hasAccess = !isScript || hasAccessToFile(selectedItem)
-    const permission = getUserPermission(selectedItem)
-
-    // Check if user is the creator
-    const isCreator = String(selectedItem.created_by) === String(currentUserId)
-
-    // Check if file is shared with others
-    const isShared = Array.isArray(selectedItem.shared_with) && selectedItem.shared_with.length > 0
 
     return (
       <div className="file-details">
@@ -935,9 +715,7 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
         <div className="details-row">
           <User size={14} />
           <span className="details-label">Created by:</span>
-          <span className="details-value">
-            {selectedItem.created_by_full_name || selectedItem.createdByFullName || selectedItem.createdBy || "Unknown"}
-          </span>
+          <span className="details-value">{selectedItem.full_name || selectedItem.createdBy || "Unknown"}</span>
         </div>
         <div className="details-row">
           <Clock size={14} />
@@ -949,54 +727,15 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
         <div className="details-row">
           <User size={14} />
           <span className="details-label">Modified by:</span>
-          <span className="details-value">
-            {selectedItem.modified_by_full_name ||
-              selectedItem.modifiedByFullName ||
-              selectedItem.lastModifiedBy ||
-              "Unknown"}
-          </span>
+          <span className="details-value">{selectedItem.modified_by_full_name || selectedItem.lastModifiedBy || "Unknown"}</span>
         </div>
-
-        {isScript && (
-          <div className="collaboration-status">
-            <h4>Collaboration Status</h4>
-            {isCreator ? (
-              <div className="owner-status">
-                <Shield size={16} />
-                <span>You are the owner of this file</span>
-                {isShared && (
-                  <div className="shared-count">Shared with {selectedItem.shared_with?.length || 0} user(s)</div>
-                )}
-              </div>
-            ) : hasAccess ? (
-              <div className="access-status">
-                <CollaborationBadge file={selectedItem} showDetails={true} />
-              </div>
-            ) : (
-              <div className="access-warning">
-                <AlertTriangle size={16} />
-                <span>You don't have permission to access this file.</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {isScript && (isCreator || isAdmin) && (
-          <div className="sharing-actions">
-            <button className="share-button" onClick={() => handleOptionClick("share", selectedItem)}>
-              <Share2 size={14} /> Manage Sharing
-            </button>
-          </div>
-        )}
       </div>
     )
   }
 
   // Change the handleViewModeChange function to keep scripts in the sidebar
   const handleViewModeChange = (mode) => {
-    setViewMode(mode)
-    // Clear selected item when switching views
-    setSelectedItem(null)
+    setViewMode(mode);
   }
 
   return (
@@ -1017,7 +756,7 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
             <span>Files</span>
           </button>
           <button
-            className={`view-mode-btn ${viewMode === "scripts" ? "active" : ""}`}
+            className={`view-mode-btn`}
             onClick={() => handleViewModeChange("scripts")}
             title="Scripts"
           >
@@ -1053,9 +792,9 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
             className="action-button"
             onClick={() => {
               if (viewMode === "file-manager" || viewMode === "scripts") {
-                loadFileStructure()
+                loadFileStructure();
               } else {
-                loadMetadata()
+                loadMetadata();
               }
             }}
             title="Refresh"
@@ -1072,7 +811,11 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
           ref={searchInputRef}
           type="text"
           placeholder={`Search ${
-            viewMode === "file-manager" ? "files" : viewMode === "scripts" ? "scripts" : "schemas"
+            viewMode === "file-manager"
+              ? "files"
+              : viewMode === "scripts"
+                ? "scripts"
+                : "schemas"
           }...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -1135,116 +878,114 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
                 {filteredScripts.map((script) => (
                   <div
                     key={`${script.path}/${script.name}`}
-                    className={`script-item ${selectedItem && selectedItem.path === script.path && selectedItem.name === script.name ? "selected" : ""} ${!script.hasAccess ? "restricted" : ""} ${script.shared_with && script.shared_with.length > 0 ? "shared" : ""}`}
+                    className={`script-item ${selectedItem && selectedItem.path === script.path && selectedItem.name === script.name ? "selected" : ""}`}
                     onClick={() => setSelectedItem(script)}
                     onDoubleClick={() => handleFileDoubleClick(script)}
                     onContextMenu={(e) => handleRightClick(e, script)}
                     data-tooltip={`${script.name} (${script.extension})
-                    Created: ${formatDate(script.createdAt)}
-                    Created by: ${script.created_by_full_name || script.createdByFullName || script.createdBy || "Unknown"}
-                    Modified: ${formatDate(script.lastModifiedAt)}
-                    Modified by: ${script.modified_by_full_name || script.modifiedByFullName || script.lastModifiedBy || "Unknown"}
-                    ${!script.hasAccess ? "⚠️ You don't have access to this script" : ""}
-                    ${isAdmin ? "🛡️ You have admin access to this script" : ""}
-                    ${script.shared_with && script.shared_with.length > 0 ? "🔗 This script is shared with other users" : ""}`}
-                                      >
+Created: ${formatDate(script.createdAt)}
+Created by: ${script.full_name || script.createdBy}
+Modified: ${formatDate(script.lastModifiedAt)}
+Modified by: ${script.modified_by_full_name || script.lastModifiedBy}`}
+                  >
                     <div className="script-col filename">
                       {getItemIcon(script)}
                       <span>{script.name}</span>
-                      {!script.hasAccess && <AlertTriangle size={14} className="lock-icon" />}
-                      {isAdmin && <Shield size={14} className="admin-icon" />}
-                      {script.shared_with && script.shared_with.length > 0 && (
-                        <Share2 size={14} className="share-icon" />
-                      )}
                     </div>
                     <div className="script-col extension">{script.extension}</div>
                     <div className="script-col created">{formatDate(script.createdAt)}</div>
-                    <div className="script-col creator">
-                      {script.created_by_full_name || script.createdByFullName || script.createdBy || "Unknown"}
-                    </div>
+                    <div className="script-col creator">{script.full_name || script.createdBy}</div>
                   </div>
                 ))}
               </div>
             )}
-
-            {/* Only show file details in scripts view */}
-            {selectedItem && renderFileDetails()}
           </div>
         )}
 
+
         {/* Database Explorer View */}
         {viewMode === "object-explorer" && (
-          <div className="object-explorer-content">
-            {filteredMetadata.length === 0 ? (
-              <div className="empty-state">
-                <Database size={24} />
-                <p>No schemas found. Import data to get started.</p>
-                <label className="import-first-item">
-                  <input type="file" onChange={handleImport} hidden />
-                  <Plus size={14} /> Import Data
-                </label>
-              </div>
+  <div className="object-explorer-content">
+    {filteredMetadata.length === 0 ? (
+      <div className="empty-state">
+        <Database size={24} />
+        <p>No schemas found. Import data to get started.</p>
+        <label className="import-first-item">
+          <input type="file" onChange={handleImport} hidden />
+          <Plus size={14} /> Import Data
+        </label>
+      </div>
+    ) : (
+      filteredMetadata.map(([schemaName, tables]) => (
+        <div key={schemaName} className="schema">
+          <div
+            className="schema-header"
+            onClick={() => toggleFolder(`schema-${schemaName}`)}
+          >
+            {expandedFolders[`schema-${schemaName}`] ? (
+              <ChevronDown size={16} className="folder-icon" />
             ) : (
-              filteredMetadata.map(([schemaName, tables]) => (
-                <div key={schemaName} className="schema">
-                  <div className="schema-header" onClick={() => toggleFolder(`schema-${schemaName}`)}>
-                    {expandedFolders[`schema-${schemaName}`] ? (
+              <ChevronRight size={16} className="folder-icon" />
+            )}
+            <Database size={16} className="item-type-icon database" />
+            <span className="schema-name">{schemaName}</span>
+          </div>
+
+          {expandedFolders[`schema-${schemaName}`] && (
+            <div className="tables">
+              {Object.entries(tables).map(([tableName, columns]) => (
+                <div key={tableName} className="table">
+                  <div
+                    className="table-header"
+                    onClick={() => toggleFolder(`table-${tableName}`)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      showDownloadOptions(e, schemaName, tableName);
+                    }}
+                  >
+                    {expandedFolders[`table-${tableName}`] ? (
                       <ChevronDown size={16} className="folder-icon" />
                     ) : (
                       <ChevronRight size={16} className="folder-icon" />
                     )}
-                    <Database size={16} className="item-type-icon database" />
-                    <span className="schema-name">{schemaName}</span>
+                    <Table size={16} className="item-type-icon table" />
+                    <span className="table-name">{tableName}</span>
+                    <Download
+                      size={14}
+                      className="download-icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showDownloadOptions(e, schemaName, tableName);
+                      }}
+                    />
                   </div>
-
-                  {expandedFolders[`schema-${schemaName}`] && (
-                    <div className="tables">
-                      {Object.entries(tables).map(([tableName, columns]) => (
-                        <div key={tableName} className="table">
-                          <div
-                            className="table-header"
-                            onClick={() => toggleFolder(`table-${tableName}`)}
-                            onContextMenu={(e) => {
-                              e.preventDefault()
-                              showDownloadOptions(e, schemaName, tableName)
-                            }}
-                          >
-                            {expandedFolders[`table-${tableName}`] ? (
-                              <ChevronDown size={16} className="folder-icon" />
-                            ) : (
-                              <ChevronRight size={16} className="folder-icon" />
-                            )}
-                            <Table size={16} className="item-type-icon table" />
-                            <span className="table-name">{tableName}</span>
-                            <Download
-                              size={14}
-                              className="download-icon"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                showDownloadOptions(e, schemaName, tableName)
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              ))
-            )}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </div>
+)}
 
-        {/* File Details Panel - Only show in file-manager view */}
-        {viewMode === "file-manager" && selectedItem && renderFileDetails()}
+        {/* File Details Panel */}
+        {selectedItem && renderFileDetails()}
       </div>
 
       {/* Context Menu */}
       {contextMenu && (
-        <div className="context-menu" style={{ left: contextMenu.x, top: contextMenu.y }}>
+        <div
+          className="context-menu"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+        >
           {contextMenu.options ? (
             contextMenu.options.map((option, index) => (
-              <div key={index} className="context-menu-item" onClick={() => option.action()}>
+              <div
+                key={index}
+                className="context-menu-item"
+                onClick={() => option.action()}
+              >
                 {option.icon && option.icon}
                 {option.label}
               </div>
@@ -1260,35 +1001,23 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
               <div className="context-menu-item" onClick={() => handleOptionClick("delete")}>
                 <Trash size={14} /> Delete
               </div>
-              {contextMenu.canShare && (
-                <div className="context-menu-item" onClick={() => handleOptionClick("share")}>
-                  <Share2 size={14} /> Share
-                </div>
-              )}
             </>
           )}
         </div>
       )}
 
-      {/* File Sharing Modal */}
-      {showSharingModal && fileToShare && (
-        <ShareModal
-          file={fileToShare}
-          isOpen={showSharingModal}
-          onClose={() => setShowSharingModal(false)}
-          onShareUpdate={handleShareUpdate}
-        />
-      )}
-
       {/* Resize handle */}
       <div ref={resizeHandleRef} className="resize-handle"></div>
+    </div>)
 
-      {/* Alert component */}
-      {alert && (
-        <CustomAlert type={alert.type} title={alert.title} message={alert.message} onClose={() => setAlert(null)} />
-      )}
-    </div>
-  )
-}
-
-export default LeftBar
+    {/* Alert message */}
+    {alert && (
+      <CustomAlert
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={() => setAlert(null)}
+      />
+    )};
+  }
+export default LeftBar;
