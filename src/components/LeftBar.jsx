@@ -1140,14 +1140,14 @@ const LeftBar = ({ onOpenFile, onFileStructureChange, theme, onThemeChange }) =>
                     onDoubleClick={() => handleFileDoubleClick(script)}
                     onContextMenu={(e) => handleRightClick(e, script)}
                     data-tooltip={`${script.name} (${script.extension})
-Created: ${formatDate(script.createdAt)}
-Created by: ${script.created_by_full_name || script.createdByFullName || script.createdBy || "Unknown"}
-Modified: ${formatDate(script.lastModifiedAt)}
-Modified by: ${script.modified_by_full_name || script.modifiedByFullName || script.lastModifiedBy || "Unknown"}
-${!script.hasAccess ? "⚠️ You don't have access to this script" : ""}
-${isAdmin ? "🛡️ You have admin access to this script" : ""}
-${script.shared_with && script.shared_with.length > 0 ? "🔗 This script is shared with other users" : ""}`}
-                  >
+                    Created: ${formatDate(script.createdAt)}
+                    Created by: ${script.created_by_full_name || script.createdByFullName || script.createdBy || "Unknown"}
+                    Modified: ${formatDate(script.lastModifiedAt)}
+                    Modified by: ${script.modified_by_full_name || script.modifiedByFullName || script.lastModifiedBy || "Unknown"}
+                    ${!script.hasAccess ? "⚠️ You don't have access to this script" : ""}
+                    ${isAdmin ? "🛡️ You have admin access to this script" : ""}
+                    ${script.shared_with && script.shared_with.length > 0 ? "🔗 This script is shared with other users" : ""}`}
+                                      >
                     <div className="script-col filename">
                       {getItemIcon(script)}
                       <span>{script.name}</span>
