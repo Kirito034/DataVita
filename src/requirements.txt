@@ -1,0 +1,17 @@
+Flask
+Flask-CORS
+Flask-SocketIO
+Flask-SQLAlchemy
+SQLAlchemy
+Werkzeug
+python-dateutil
+bcrypt
+pyjwt
+matplotlib
+pandas
+pygments
+duckdb
+psycopg2
+findspark
+pyspark
+py4j

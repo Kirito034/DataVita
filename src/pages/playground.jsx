@@ -46,7 +46,6 @@ import * as Babel from "@babel/standalone"
 import JSZip from "jszip"
 import styles from "../styles/playground.module.css"
 import ErrorBoundary from '../components/ErrorBoundary'
-import * as monaco from 'monaco-editor'
 
 /**
  * Default templates for different file types
@@ -1653,432 +1652,430 @@ help - Show this help`
   // =========================================================================
 
   return (
-    <ErrorBoundary>
-      <div className={`${styles.playgroundContainer} ${styles[theme]}`}>
-        {/* Header */}
-        <div className={styles.playgroundHeader}>
-          <div className={styles.headerLeft}>
-            <h1 className={styles.playgroundTitle}>Playground</h1>
-            <div className={styles.headerTabs}>
-              <a href="/" className={`${styles.tabButton}`} style={{ textDecoration: "none" }}>
-                <Home size={24} /> {/* Home Icon */}
-                <span className="font-semibold">Home</span>
-              </a>
-              <button
-                className={`${styles.tabButton} ${activeTab === "editor" ? styles.active : ""}`}
-                onClick={() => handleTabChange("editor")}
-              >
-                <Code size={14} />
-                <span>Editor</span>
-              </button>
-              <button
-                className={`${styles.tabButton} ${activeTab === "preview" ? styles.active : ""}`}
-                onClick={() => handleTabChange("preview")}
-              >
-                <Eye size={14} />
-                <span>Preview</span>
-              </button>
-            </div>
-          </div>
-          <div className={styles.headerActions}>
-            <button onClick={sharePlayground} className={styles.iconButton} title="Share Playground">
-              <Share size={16} />
-            </button>
-            <button onClick={downloadProject} className={styles.iconButton} title="Download Project">
-              <Download size={16} />
+    <div className={`${styles.playgroundContainer} ${styles[theme]}`}>
+      {/* Header */}
+      <div className={styles.playgroundHeader}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.playgroundTitle}>Playground</h1>
+          <div className={styles.headerTabs}>
+            <a href="/" className={`${styles.tabButton}`} style={{ textDecoration: "none" }}>
+              <Home size={16} /> {/* Home Icon */}
+              <span className="font-semibold">Home</span>
+            </a>
+            <button
+              className={`${styles.tabButton} ${activeTab === "editor" ? styles.active : ""}`}
+              onClick={() => handleTabChange("editor")}
+            >
+              <Code size={14} />
+              <span>Editor</span>
             </button>
             <button
-              onClick={toggleTheme}
-              className={styles.iconButton}
-              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              className={`${styles.tabButton} ${activeTab === "preview" ? styles.active : ""}`}
+              onClick={() => handleTabChange("preview")}
             >
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-            <button
-              onClick={toggleEditorLayout}
-              className={styles.iconButton}
-              title={`Switch to ${editorLayout === "horizontal" ? "vertical" : "horizontal"} layout`}
-            >
-              <Settings size={16} />
+              <Eye size={14} />
+              <span>Preview</span>
             </button>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className={`${styles.mainContent} ${styles[editorLayout]}`}>
-          {/* Sidebar */}
-          {isSidebarOpen && (
-            <div className={styles.sidebar}>
-              <div className={styles.sidebarTabs}>
-                <button
-                  className={`${styles.sidebarTab} ${activeSidebarTab === "files" ? styles.active : ""}`}
-                  onClick={() => setActiveSidebarTab("files")}
-                  title="Files"
-                >
-                  <FileText size={16} />
-                </button>
-                <button
-                  className={`${styles.sidebarTab} ${activeSidebarTab === "packages" ? styles.active : ""}`}
-                  onClick={() => setActiveSidebarTab("packages")}
-                  title="Packages"
-                >
-                  <Package size={16} />
-                </button>
-              </div>
-
-              <div className={styles.sidebarContent}>
-                {/* Files Panel */}
-                {activeSidebarTab === "files" && (
-                  <div className={styles.filesPanel}>
-                    <div className={styles.fileManagerHeader}>
-                      <span className={styles.fileManagerTitle}>Files</span>
-                      <div className={styles.fileManagerActions}>
-                        <button
-                          onClick={() => setFileViewMode(fileViewMode === "tree" ? "list" : "tree")}
-                          className={styles.iconButton}
-                          title={fileViewMode === "tree" ? "List View" : "Tree View"}
-                        >
-                          {fileViewMode === "tree" ? <List size={16} /> : <Layers size={16} />}
-                        </button>
-                        <button
-                          onClick={() => setIsCreatingFile(true)}
-                          className={styles.iconButton}
-                          title="Create new file"
-                        >
-                          <Plus size={16} />
-                        </button>
-                        <button onClick={createNewFolder} className={styles.iconButton} title="Create new folder">
-                          <Folder size={16} />
-                        </button>
-                        <button
-                          onClick={() => setIsSidebarOpen(false)}
-                          className={styles.iconButton}
-                          title="Close sidebar"
-                        >
-                          <ChevronLeft size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* New File Form */}
-                    {isCreatingFile && (
-                      <div className={styles.newFileForm}>
-                        <input
-                          type="text"
-                          value={newFileName}
-                          onChange={(e) => setNewFileName(e.target.value)}
-                          placeholder="File name"
-                          className={styles.newFileInput}
-                          autoFocus
-                        />
-                        <select
-                          value={newFileType}
-                          onChange={(e) => setNewFileType(e.target.value)}
-                          className={styles.newFileSelect}
-                        >
-                          <option value="html">HTML</option>
-                          <option value="css">CSS</option>
-                          <option value="javascript">JavaScript</option>
-                          <option value="jsx">JSX</option>
-                          <option value="tsx">TSX</option>
-                          <option value="json">JSON</option>
-                        </select>
-                        <div className={styles.newFileActions}>
-                          <button onClick={createNewFile} className={styles.newFileButton}>
-                            Create
-                          </button>
-                          <button onClick={() => setIsCreatingFile(false)} className={styles.newFileButton}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* File List */}
-                    <div className={styles.fileList}>{renderFileTree()}</div>
-                  </div>
-                )}
-
-                {/* Packages Panel */}
-                {activeSidebarTab === "packages" && (
-                  <div className={styles.packagesPanel}>{renderPackageInstaller()}</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Editor Section */}
-          <div className={`${styles.editorSection} ${activeTab === "editor" ? styles.visible : styles.hidden}`}>
-            <div className={styles.editorHeader}>
-              <div className={styles.editorFileInfo}>
-                {!isSidebarOpen && (
-                  <button onClick={() => setIsSidebarOpen(true)} className={styles.iconButton} title="Open sidebar">
-                    <ChevronRight size={16} />
-                  </button>
-                )}
-                <span className={styles.editorFileName}>{activeFile?.name || "Untitled"}</span>
-                <span className={styles.editorFileType}>{activeFile?.type || ""}</span>
-
-                {/* Show error count if there are syntax errors */}
-                {syntaxErrors.length > 0 && (
-                  <span className={styles.errorCount} title={`${syntaxErrors.length} error(s) found`}>
-                    <AlertCircle size={14} />
-                    {syntaxErrors.length}
-                  </span>
-                )}
-              </div>
-              <div className={styles.editorActions}>
-                <button onClick={formatCode} className={styles.iconButton} title="Format code">
-                  <Code size={16} />
-                </button>
-                <button
-                  onClick={() => setShowLineNumbers(!showLineNumbers)}
-                  className={styles.iconButton}
-                  title={showLineNumbers ? "Hide line numbers" : "Show line numbers"}
-                >
-                  {showLineNumbers ? "#" : "1"}
-                </button>
-              </div>
-            </div>
-
-            {/* Code Editor */}
-            <div
-              className={`${styles.codeEditor} ${showLineNumbers ? styles.hasLineNumbers : ""}`}
-              ref={editorWrapperRef}
-            >
-              {/* Optimize the line numbers rendering */}
-              {showLineNumbers && activeFile && (
-                <div className={styles.lineNumbers} ref={lineNumbersRef}>
-                  {activeFile.content.split("\n").map((_, i) => {
-                    const lineNum = i + 1
-                    const hasError = syntaxErrors.some((err) => err.line === lineNum)
-                    return (
-                      <div
-                        key={i}
-                        className={`${styles.lineNumber} ${hasError ? styles.errorLine : ""}`}
-                        title={hasError ? syntaxErrors.find((err) => err.line === lineNum)?.message : ""}
-                      >
-                        {hasError && <AlertCircle size={12} className={styles.lineErrorIcon} />}
-                        {lineNum}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              {activeFile ? (
-                <div className={styles.editorWithHighlight}>
-                  {/* Syntax highlighted code (read-only, for display) */}
-                  <pre className={styles.highlightedCode} ref={highlightedCodeRef} aria-hidden="true"></pre>
-
-                  {/* Actual textarea for editing */}
-                  <textarea
-                    ref={editorRef}
-                    value={activeFile.content || ""}
-                    onChange={handleEditorChange}
-                    onKeyDown={handleKeyDown}
-                    className={styles.codeContent}
-                    style={{
-                      fontSize: `${settings.fontSize}px`,
-                      tabSize: settings.tabSize,
-                      whiteSpace: settings.wordWrap ? "pre-wrap" : "pre",
-                    }}
-                    spellCheck="false"
-                    autoCapitalize="off"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    data-gramm="false"
-                    data-gramm_editor="false"
-                    data-enable-grammarly="false"
-                    wrap={settings.wordWrap ? "soft" : "off"}
-                  />
-                </div>
-              ) : (
-                <div className={styles.noFileSelected}>
-                  <p>No file selected</p>
-                  <button onClick={() => setIsCreatingFile(true)} className={styles.createFileButton}>
-                    Create a new file
-                  </button>
-                </div>
-              )}
-
-              {/* Error markers */}
-              {activeFile && syntaxErrors.length > 0 && (
-                <div className={styles.errorMarkers}>
-                  {syntaxErrors.map((error, index) => {
-                    const lines = activeFile.content.split("\n")
-                    const lineHeight = 1.7 // Same as in CSS
-                    const top = (error.line - 1) * lineHeight + 0.2 // Adjust for positioning
-
-                    return (
-                      <div key={index} className={styles.errorMarker} style={{ top: `${top}em` }} title={error.message}>
-                        <span className={styles.errorMarkerLine}></span>
-                        <span className={styles.errorMarkerIcon}>
-                          <AlertCircle size={12} />
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Preview Section */}
-          <div
-            className={`${styles.previewSection} ${isFullScreen ? styles.fullScreen : ""} ${activeTab === "preview" ? styles.visible : styles.hidden}`}
+        <div className={styles.headerActions}>
+          <button onClick={sharePlayground} className={styles.iconButton} title="Share Playground">
+            <Share size={16} />
+          </button>
+          <button onClick={downloadProject} className={styles.iconButton} title="Download Project">
+            <Download size={16} />
+          </button>
+          <button
+            onClick={toggleTheme}
+            className={styles.iconButton}
+            title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
           >
-            <div className={styles.previewHeader}>
-              <span className={styles.previewTitle}>Preview</span>
-              <div className={styles.previewActions}>
-                <button
-                  onClick={updatePreview}
-                  className={`${styles.iconButton} ${isProcessing ? styles.processing : ""}`}
-                  disabled={isProcessing}
-                  title="Run code"
-                >
-                  <Play size={16} />
+            {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+          <button
+            onClick={toggleEditorLayout}
+            className={styles.iconButton}
+            title={`Switch to ${editorLayout === "horizontal" ? "vertical" : "horizontal"} layout`}
+          >
+            <Settings size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className={`${styles.mainContent} ${styles[editorLayout]}`}>
+        {/* Sidebar */}
+        {isSidebarOpen && (
+          <div className={styles.sidebar}>
+            <div className={styles.sidebarTabs}>
+              <button
+                className={`${styles.sidebarTab} ${activeSidebarTab === "files" ? styles.active : ""}`}
+                onClick={() => setActiveSidebarTab("files")}
+                title="Files"
+              >
+                <FileText size={16} />
+              </button>
+              <button
+                className={`${styles.sidebarTab} ${activeSidebarTab === "packages" ? styles.active : ""}`}
+                onClick={() => setActiveSidebarTab("packages")}
+                title="Packages"
+              >
+                <Package size={16} />
+              </button>
+            </div>
+
+            <div className={styles.sidebarContent}>
+              {/* Files Panel */}
+              {activeSidebarTab === "files" && (
+                <div className={styles.filesPanel}>
+                  <div className={styles.fileManagerHeader}>
+                    <span className={styles.fileManagerTitle}>Files</span>
+                    <div className={styles.fileManagerActions}>
+                      <button
+                        onClick={() => setFileViewMode(fileViewMode === "tree" ? "list" : "tree")}
+                        className={styles.iconButton}
+                        title={fileViewMode === "tree" ? "List View" : "Tree View"}
+                      >
+                        {fileViewMode === "tree" ? <List size={16} /> : <Layers size={16} />}
+                      </button>
+                      <button
+                        onClick={() => setIsCreatingFile(true)}
+                        className={styles.iconButton}
+                        title="Create new file"
+                      >
+                        <Plus size={16} />
+                      </button>
+                      <button onClick={createNewFolder} className={styles.iconButton} title="Create new folder">
+                        <Folder size={16} />
+                      </button>
+                      <button
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={styles.iconButton}
+                        title="Close sidebar"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* New File Form */}
+                  {isCreatingFile && (
+                    <div className={styles.newFileForm}>
+                      <input
+                        type="text"
+                        value={newFileName}
+                        onChange={(e) => setNewFileName(e.target.value)}
+                        placeholder="File name"
+                        className={styles.newFileInput}
+                        autoFocus
+                      />
+                      <select
+                        value={newFileType}
+                        onChange={(e) => setNewFileType(e.target.value)}
+                        className={styles.newFileSelect}
+                      >
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="jsx">JSX</option>
+                        <option value="tsx">TSX</option>
+                        <option value="json">JSON</option>
+                      </select>
+                      <div className={styles.newFileActions}>
+                        <button onClick={createNewFile} className={styles.newFileButton}>
+                          Create
+                        </button>
+                        <button onClick={() => setIsCreatingFile(false)} className={styles.newFileButton}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* File List */}
+                  <div className={styles.fileList}>{renderFileTree()}</div>
+                </div>
+              )}
+
+              {/* Packages Panel */}
+              {activeSidebarTab === "packages" && (
+                <div className={styles.packagesPanel}>{renderPackageInstaller()}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Editor Section */}
+        <div className={`${styles.editorSection} ${activeTab === "editor" ? styles.visible : styles.hidden}`}>
+          <div className={styles.editorHeader}>
+            <div className={styles.editorFileInfo}>
+              {!isSidebarOpen && (
+                <button onClick={() => setIsSidebarOpen(true)} className={styles.iconButton} title="Open sidebar">
+                  <ChevronRight size={16} />
                 </button>
-                <button
-                  onClick={() => setIsAutoRefresh(!isAutoRefresh)}
-                  className={`${styles.iconButton} ${isAutoRefresh ? styles.active : ""}`}
-                  title={isAutoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"}
-                >
-                  <RefreshCw size={16} className={isAutoRefresh ? styles.spinning : ""} />
-                </button>
-                <button
-                  onClick={() => setIsFullScreen(!isFullScreen)}
-                  className={styles.iconButton}
-                  title={isFullScreen ? "Exit full screen" : "Full screen"}
-                >
-                  {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              )}
+              <span className={styles.editorFileName}>{activeFile?.name || "Untitled"}</span>
+              <span className={styles.editorFileType}>{activeFile?.type || ""}</span>
+
+              {/* Show error count if there are syntax errors */}
+              {syntaxErrors.length > 0 && (
+                <span className={styles.errorCount} title={`${syntaxErrors.length} error(s) found`}>
+                  <AlertCircle size={14} />
+                  {syntaxErrors.length}
+                </span>
+              )}
+            </div>
+            <div className={styles.editorActions}>
+              <button onClick={formatCode} className={styles.iconButton} title="Format code">
+                <Code size={16} />
+              </button>
+              <button
+                onClick={() => setShowLineNumbers(!showLineNumbers)}
+                className={styles.iconButton}
+                title={showLineNumbers ? "Hide line numbers" : "Show line numbers"}
+              >
+                {showLineNumbers ? "#" : "1"}
+              </button>
+            </div>
+          </div>
+
+          {/* Code Editor */}
+          <div
+            className={`${styles.codeEditor} ${showLineNumbers ? styles.hasLineNumbers : ""}`}
+            ref={editorWrapperRef}
+          >
+            {/* Optimize the line numbers rendering */}
+            {showLineNumbers && activeFile && (
+              <div className={styles.lineNumbers} ref={lineNumbersRef}>
+                {activeFile.content.split("\n").map((_, i) => {
+                  const lineNum = i + 1
+                  const hasError = syntaxErrors.some((err) => err.line === lineNum)
+                  return (
+                    <div
+                      key={i}
+                      className={`${styles.lineNumber} ${hasError ? styles.errorLine : ""}`}
+                      title={hasError ? syntaxErrors.find((err) => err.line === lineNum)?.message : ""}
+                    >
+                      {hasError && <AlertCircle size={12} className={styles.lineErrorIcon} />}
+                      {lineNum}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {activeFile ? (
+              <div className={styles.editorWithHighlight}>
+                {/* Syntax highlighted code (read-only, for display) */}
+                <pre className={styles.highlightedCode} ref={highlightedCodeRef} aria-hidden="true"></pre>
+
+                {/* Actual textarea for editing */}
+                <textarea
+                  ref={editorRef}
+                  value={activeFile.content || ""}
+                  onChange={handleEditorChange}
+                  onKeyDown={handleKeyDown}
+                  className={styles.codeContent}
+                  style={{
+                    fontSize: `${settings.fontSize}px`,
+                    tabSize: settings.tabSize,
+                    whiteSpace: settings.wordWrap ? "pre-wrap" : "pre",
+                  }}
+                  spellCheck="false"
+                  autoCapitalize="off"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  data-gramm="false"
+                  data-gramm_editor="false"
+                  data-enable-grammarly="false"
+                  wrap={settings.wordWrap ? "soft" : "off"}
+                />
+              </div>
+            ) : (
+              <div className={styles.noFileSelected}>
+                <p>No file selected</p>
+                <button onClick={() => setIsCreatingFile(true)} className={styles.createFileButton}>
+                  Create a new file
                 </button>
               </div>
-            </div>
-            <div className={styles.previewContent}>
-              {previewError ? (
-                <div className={styles.previewError}>
-                  <h3>Preview Error</h3>
-                  <pre>{previewError}</pre>
-                </div>
-              ) : (
-                <iframe
-                  ref={iframeRef}
-                  title="preview"
-                  className={styles.previewFrame}
-                  sandbox="allow-scripts allow-modals allow-forms allow-same-origin allow-popups allow-presentation"
-                />
-              )}
-            </div>
-          </div>
-        </div>
+            )}
 
-        {/* Bottom Panel */}
-        <div className={`${styles.bottomPanel} ${isBottomPanelOpen ? "" : styles.collapsed}`}>
-          <div className={styles.bottomPanelHeader}>
-            <div className={styles.bottomPanelTabs}>
-              <button
-                className={`${styles.bottomPanelTab} ${activeBottomTab === "console" ? styles.active : ""}`}
-                onClick={() => setActiveBottomTab("console")}
-              >
-                <Terminal size={14} />
-                <span>Console</span>
-                {consoleOutput.filter((log) => log.type === "error").length > 0 && (
-                  <span className={styles.tabBadge}>{consoleOutput.filter((log) => log.type === "error").length}</span>
-                )}
-              </button>
-              <button
-                className={`${styles.bottomPanelTab} ${activeBottomTab === "terminal" ? styles.active : ""}`}
-                onClick={() => setActiveBottomTab("terminal")}
-              >
-                <Code size={14} />
-                <span>Terminal</span>
-              </button>
-              <button
-                className={`${styles.bottomPanelTab} ${activeBottomTab === "problems" ? styles.active : ""}`}
-                onClick={() => setActiveBottomTab("problems")}
-              >
-                <AlertCircle size={14} />
-                <span>Problems</span>
-                {syntaxErrors.length + runtimeErrors.length > 0 && (
-                  <span className={styles.tabBadge}>{syntaxErrors.length + runtimeErrors.length}</span>
-                )}
-              </button>
-            </div>
-            <div className={styles.bottomPanelActions}>
-              {activeBottomTab === "console" && (
-                <button onClick={clearConsole} className={styles.iconButton} title="Clear console">
-                  Clear
-                </button>
-              )}
-              <button
-                onClick={() => setIsBottomPanelOpen(!isBottomPanelOpen)}
-                className={styles.iconButton}
-                title={isBottomPanelOpen ? "Collapse panel" : "Expand panel"}
-              >
-                {isBottomPanelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </button>
-            </div>
-          </div>
+            {/* Error markers */}
+            {activeFile && syntaxErrors.length > 0 && (
+              <div className={styles.errorMarkers}>
+                {syntaxErrors.map((error, index) => {
+                  const lines = activeFile.content.split("\n")
+                  const lineHeight = 1.7 // Same as in CSS
+                  const top = (error.line - 1) * lineHeight + 0.2 // Adjust for positioning
 
-          {isBottomPanelOpen && (
-            <div className={styles.bottomPanelContent}>
-              {/* Console Panel */}
-              {activeBottomTab === "console" && (
-                <div className={styles.consolePanel}>
-                  {consoleOutput.length === 0 ? (
-                    <div className={styles.emptyConsole}>
-                      <p>No console output yet</p>
+                  return (
+                    <div key={index} className={styles.errorMarker} style={{ top: `${top}em` }} title={error.message}>
+                      <span className={styles.errorMarkerLine}></span>
+                      <span className={styles.errorMarkerIcon}>
+                        <AlertCircle size={12} />
+                      </span>
                     </div>
-                  ) : (
-                    consoleOutput.map((log, index) => (
-                      <div key={index} className={`${styles.output} ${styles[log.type]}`}>
-                        <span className={styles.timestamp}>[{log.timestamp}]</span>
-                        <span className={`${styles.logMessage} ${styles[log.type]}`}>{log.message}</span>
-                      </div>
-                    ))
-                  )}
-                  <div ref={consoleEndRef} />
-                </div>
-              )}
-
-              {/* Terminal Panel */}
-              {activeBottomTab === "terminal" && <div className={styles.terminalPanel}>{renderTerminal()}</div>}
-
-              {/* Problems Panel */}
-              {activeBottomTab === "problems" && <div className={styles.problemsPanel}>{renderErrorPanel()}</div>}
-            </div>
-          )}
-        </div>
-
-        {/* Status Bar */}
-        <div className={styles.statusBar}>
-          <div className={styles.statusLeft}>
-            {activeFile && (
-              <>
-                <span className={styles.statusItem}>{activeFile.type.toUpperCase()}</span>
-                <span className={styles.statusItem}>
-                  {activeFile.path === "/" ? activeFile.name : `${activeFile.path}/${activeFile.name}`}
-                </span>
-                {syntaxErrors.length > 0 && (
-                  <span className={styles.statusError}>
-                    {syntaxErrors.length} error{syntaxErrors.length !== 1 ? "s" : ""}
-                  </span>
-                )}
-              </>
+                  )
+                })}
+              </div>
             )}
           </div>
-          <div className={styles.statusRight}>
-            <span className={styles.statusItem}>{theme === "light" ? "Light Mode" : "Dark Mode"}</span>
-            <span className={styles.statusItem}>{isAutoRefresh ? "Auto-refresh: On" : "Auto-refresh: Off"}</span>
-            <span className={styles.statusItem}>
-              <Coffee size={14} className={styles.statusIcon} />
-              Ready
-            </span>
+        </div>
+
+        {/* Preview Section */}
+        <div
+          className={`${styles.previewSection} ${isFullScreen ? styles.fullScreen : ""} ${activeTab === "preview" ? styles.visible : styles.hidden}`}
+        >
+          <div className={styles.previewHeader}>
+            <span className={styles.previewTitle}>Preview</span>
+            <div className={styles.previewActions}>
+              <button
+                onClick={updatePreview}
+                className={`${styles.iconButton} ${isProcessing ? styles.processing : ""}`}
+                disabled={isProcessing}
+                title="Run code"
+              >
+                <Play size={16} />
+              </button>
+              <button
+                onClick={() => setIsAutoRefresh(!isAutoRefresh)}
+                className={`${styles.iconButton} ${isAutoRefresh ? styles.active : ""}`}
+                title={isAutoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"}
+              >
+                <RefreshCw size={16} className={isAutoRefresh ? styles.spinning : ""} />
+              </button>
+              <button
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className={styles.iconButton}
+                title={isFullScreen ? "Exit full screen" : "Full screen"}
+              >
+                {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </div>
+          </div>
+          <div className={styles.previewContent}>
+            {previewError ? (
+              <div className={styles.previewError}>
+                <h3>Preview Error</h3>
+                <pre>{previewError}</pre>
+              </div>
+            ) : (
+              <iframe
+                ref={iframeRef}
+                title="preview"
+                className={styles.previewFrame}
+                sandbox="allow-scripts allow-modals allow-forms allow-same-origin allow-popups allow-presentation"
+              />
+            )}
           </div>
         </div>
       </div>
-    </ErrorBoundary>
+
+      {/* Bottom Panel */}
+      <div className={`${styles.bottomPanel} ${isBottomPanelOpen ? "" : styles.collapsed}`}>
+        <div className={styles.bottomPanelHeader}>
+          <div className={styles.bottomPanelTabs}>
+            <button
+              className={`${styles.bottomPanelTab} ${activeBottomTab === "console" ? styles.active : ""}`}
+              onClick={() => setActiveBottomTab("console")}
+            >
+              <Terminal size={14} />
+              <span>Console</span>
+              {consoleOutput.filter((log) => log.type === "error").length > 0 && (
+                <span className={styles.tabBadge}>{consoleOutput.filter((log) => log.type === "error").length}</span>
+              )}
+            </button>
+            <button
+              className={`${styles.bottomPanelTab} ${activeBottomTab === "terminal" ? styles.active : ""}`}
+              onClick={() => setActiveBottomTab("terminal")}
+            >
+              <Code size={14} />
+              <span>Terminal</span>
+            </button>
+            <button
+              className={`${styles.bottomPanelTab} ${activeBottomTab === "problems" ? styles.active : ""}`}
+              onClick={() => setActiveBottomTab("problems")}
+            >
+              <AlertCircle size={14} />
+              <span>Problems</span>
+              {syntaxErrors.length + runtimeErrors.length > 0 && (
+                <span className={styles.tabBadge}>{syntaxErrors.length + runtimeErrors.length}</span>
+              )}
+            </button>
+          </div>
+          <div className={styles.bottomPanelActions}>
+            {activeBottomTab === "console" && (
+              <button onClick={clearConsole} className={styles.iconButton} title="Clear console">
+                Clear
+              </button>
+            )}
+            <button
+              onClick={() => setIsBottomPanelOpen(!isBottomPanelOpen)}
+              className={styles.iconButton}
+              title={isBottomPanelOpen ? "Collapse panel" : "Expand panel"}
+            >
+              {isBottomPanelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+          </div>
+        </div>
+
+        {isBottomPanelOpen && (
+          <div className={styles.bottomPanelContent}>
+            {/* Console Panel */}
+            {activeBottomTab === "console" && (
+              <div className={styles.consolePanel}>
+                {consoleOutput.length === 0 ? (
+                  <div className={styles.emptyConsole}>
+                    <p>No console output yet</p>
+                  </div>
+                ) : (
+                  consoleOutput.map((log, index) => (
+                    <div key={index} className={`${styles.output} ${styles[log.type]}`}>
+                      <span className={styles.timestamp}>[{log.timestamp}]</span>
+                      <span className={`${styles.logMessage} ${styles[log.type]}`}>{log.message}</span>
+                    </div>
+                  ))
+                )}
+                <div ref={consoleEndRef} />
+              </div>
+            )}
+
+            {/* Terminal Panel */}
+            {activeBottomTab === "terminal" && <div className={styles.terminalPanel}>{renderTerminal()}</div>}
+
+            {/* Problems Panel */}
+            {activeBottomTab === "problems" && <div className={styles.problemsPanel}>{renderErrorPanel()}</div>}
+          </div>
+        )}
+      </div>
+
+      {/* Status Bar */}
+      <div className={styles.statusBar}>
+        <div className={styles.statusLeft}>
+          {activeFile && (
+            <>
+              <span className={styles.statusItem}>{activeFile.type.toUpperCase()}</span>
+              <span className={styles.statusItem}>
+                {activeFile.path === "/" ? activeFile.name : `${activeFile.path}/${activeFile.name}`}
+              </span>
+              {syntaxErrors.length > 0 && (
+                <span className={styles.statusError}>
+                  {syntaxErrors.length} error{syntaxErrors.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+        <div className={styles.statusRight}>
+          <span className={styles.statusItem}>{theme === "light" ? "Light Mode" : "Dark Mode"}</span>
+          <span className={styles.statusItem}>{isAutoRefresh ? "Auto-refresh: On" : "Auto-refresh: Off"}</span>
+          <span className={styles.statusItem}>
+            <Coffee size={14} className={styles.statusIcon} />
+            Ready
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }
 

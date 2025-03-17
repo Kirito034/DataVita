@@ -465,7 +465,6 @@ function Dashboard() {
                 onMouseEnter={(e) => { e.currentTarget.style.filter = "grayscale(0%)"; }} // Remove grayscale on hover
                 onMouseLeave={(e) => { e.currentTarget.style.filter = "grayscale(100%)"; }} // Restore grayscale when not hovered
               >
-                <Home size={24} />
                 <span className="font-semibold">Home</span>
               </a>
 
