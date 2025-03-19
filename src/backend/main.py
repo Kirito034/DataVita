@@ -5,6 +5,7 @@ from routes.python_routes import python_bp  # Python routes blueprint
 from routes.Pyspark_routes import pyspark_bp  # PySpark routes blueprint
 from routes.sql_routes import sql_bp
 from core.auth import auth_bp
+from playground.files import file_manager_bp
 from scripts import scan_and_store_files
 from core.utils import get_db_connection
 from datetime import datetime
@@ -34,7 +35,7 @@ from flask_cors import CORS
 CORS(app, resources={r"/*": {
     "origins": "http://localhost:5173",
     "supports_credentials": True,
-    "methods": ["GET", "POST", "OPTIONS", "DELETE"],
+    "methods": ["GET", "POST", "OPTIONS", "DELETE", "PUT"],
     "allow_headers": [
         "Content-Type",
         "Authorization",
@@ -52,6 +53,7 @@ app.register_blueprint(pyspark_bp, url_prefix='/pyspark')
 app.register_blueprint(sql_bp, url_prefix='/sql')
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(scripts_bp, url_prefix="/scripts")
+app.register_blueprint(file_manager_bp, url_prefix='/playground_files')
 # Placeholder for notebook state (You can implement this with a DB in a real-world scenario)
 notebook_state = {}
  

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
-import { ChevronDown, Home, FileText, Edit3, Eye, Plus, Code, AlignLeft, X, Menu, Github } from 'lucide-react';
+import { ChevronDown, Home, FileText, Edit3, Eye, Plus, Code, X, Menu, Github } from 'lucide-react';
 
 const Navbar = ({ 
   activeNotebook, 
@@ -11,13 +11,22 @@ const Navbar = ({
   redoAction, 
   currentDirectory = 'User Workspace',
   openFile,
-  fileTabs = [],
-  full_name = 'User'
+  fileTabs = []
 }) => {
   const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [fullName, setFullName] = useState('User'); // Default to 'User'
+
+  // ✅ Fetch `full_name` from `localStorage` when component mounts
+  useEffect(() => {
+    const storedName = localStorage.getItem('full_name');
+    if (storedName) {
+      setFullName(storedName);
+    }
+  }, []);
+
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
@@ -123,12 +132,12 @@ const Navbar = ({
         ))}
       </div>
 
-      <div className="profile" title={full_name}>
+      <div className="profile" title={fullName}>
         <div className="profile-details">
-          <span className="name">{full_name}</span>
+          <span className="name">{fullName}</span>
         </div>
         <div className="avatar">
-          {full_name.charAt(0).toUpperCase()}
+          {fullName ? fullName.charAt(0).toUpperCase() : 'U'}
         </div>
       </div>
     </div>

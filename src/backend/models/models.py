@@ -51,3 +51,18 @@ class VersionHistory(db.Model):
 
     user_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # User who made the change
     user = relationship("User", backref="versions", lazy=True)  # Relationship to User
+
+
+class PlaygroundFile(db.Model):
+    __tablename__ = "playground_files"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = db.Column(Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)  # Ensure consistency
+    file_name = db.Column(db.String(255), nullable=False)
+    file_extension = db.Column(db.String(10), nullable=False)
+    file_content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship to fetch user details (Optimized with lazy="joined")
+    user = relationship("User", backref="playground_files", lazy="joined")

@@ -11,7 +11,6 @@
   --popover-foreground: 0 0% 10%;
 
   /* Primary and Secondary */
-
   --secondary: 0 0% 92%;
   --secondary-foreground: 0 0% 15%;
 
@@ -375,6 +374,30 @@
   background-color: hsl(var(--destructive) / 0.1);
 }
 
+/* Context Menu */
+.contextMenu {
+  position: fixed;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.contextMenuItem {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.contextMenuItem:hover {
+  background-color: hsl(var(--accent) / 0.1);
+  color: hsl(var(--accent));
+}
+
 /* New File Form */
 .newFileForm {
   padding: 0.75rem;
@@ -473,6 +496,13 @@
   font-weight: 500;
   margin-bottom: 0.75rem;
   color: hsl(var(--foreground));
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.searchResults {
+  margin-bottom: 1.5rem;
 }
 
 .popularPackages {
@@ -522,10 +552,43 @@
   margin-left: 0.5rem;
 }
 
+.packageLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+  color: hsl(var(--accent));
+  transition: all 0.2s ease;
+}
+
+.packageLink:hover {
+  opacity: 0.8;
+}
+
 .packageDescription {
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
   margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+.packageTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.packageTag {
+  font-size: 0.65rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 1rem;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+.packageActions {
+  display: flex;
+  gap: 0.25rem;
 }
 
 .packageInstallButton {
@@ -542,11 +605,27 @@
   transition: all 0.2s ease;
 }
 
-.packageInstallButton:hover {
+.packageDevInstallButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius);
+  border: none;
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.packageInstallButton:hover,
+.packageDevInstallButton:hover {
   opacity: 0.9;
 }
 
-.packageInstallButton:disabled {
+.packageInstallButton:disabled,
+.packageDevInstallButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -678,6 +757,14 @@
 .errorCount {
   display: flex;
   align-items: center;
+  border-radius: var(--radius);
+  opacity: 0.1;
+}
+
+
+.errorCount {
+  display: flex;
+  align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
   color: hsl(var(--error));
@@ -691,107 +778,11 @@
   gap: 0.25rem;
 }
 
-.codeEditor {
+/* Monaco Editor Container */
+.monacoEditorContainer {
   flex: 1;
-  position: relative;
   overflow: hidden;
-  background-color: hsl(var(--card));
-}
-
-/* Editor with syntax highlighting */
-.editorWithHighlight {
   position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.highlightedCode {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 1rem;
-  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Code", monospace;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  tab-size: 2;
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  white-space: pre;
-  overflow: auto;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.codeContent {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 1rem;
-  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Code", monospace;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  tab-size: 2;
-  background-color: transparent;
-  color: transparent;
-  caret-color: hsl(var(--foreground));
-  border: none;
-  resize: none;
-  outline: none;
-  white-space: pre;
-  overflow: auto;
-  z-index: 2;
-}
-
-/* Line Numbers */
-.lineNumbers {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 1rem 0.5rem;
-  font-family: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  color: hsl(var(--muted-foreground));
-  text-align: right;
-  user-select: none;
-  pointer-events: none;
-  background: transparent;
-  z-index: 1;
-  min-width: 3rem;
-  overflow-y: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.lineNumber {
-  position: relative;
-  padding-right: 0.5rem;
-  height: 1.7em;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.lineNumber.errorLine {
-  color: hsl(var(--error));
-  font-weight: 500;
-  background-color: hsl(var(--error) / 0.1);
-}
-
-.lineErrorIcon {
-  margin-right: 0.25rem;
-  color: hsl(var(--error));
-}
-
-/* Code editor padding for line numbers */
-.hasLineNumbers .codeContent,
-.hasLineNumbers .highlightedCode {
-  padding-left: 3.5rem;
 }
 
 /* No file selected state */
@@ -817,41 +808,6 @@
 
 .createFileButton:hover {
   opacity: 0.9;
-}
-
-/* Error markers */
-.errorMarkers {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.errorMarker {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1.7em;
-  pointer-events: none;
-}
-
-.errorMarkerLine {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background-color: hsl(var(--error) / 0.5);
-}
-
-.errorMarkerIcon {
-  position: absolute;
-  left: 0.25rem;
-  bottom: 0;
-  color: hsl(var(--error));
 }
 
 /* Preview Section */
@@ -930,15 +886,41 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 50;
+  z-index: 9999; /* Ensure it stays on top */
+  background-color: rgba(0, 0, 0, 0.8); /* Optional: Adds a slight overlay effect */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents unwanted scrollbars */
 }
 
 .fullScreen .previewHeader {
   background-color: hsl(var(--background));
+  width: 100%;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fullScreen .previewContent {
+  flex-grow: 1;  /* Makes sure it takes all available space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fullScreen .previewFrame {
-  height: calc(100% - 3.5rem);
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: white; /* Ensure a proper background */
+}
+
+.previewActions {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Adjust spacing between buttons */
 }
 
 /* Bottom Panel */
@@ -1326,43 +1308,35 @@
 
 /* Scrollbars */
 .fileList::-webkit-scrollbar,
-.codeContent::-webkit-scrollbar,
 .consolePanel::-webkit-scrollbar,
 .terminalOutput::-webkit-scrollbar,
 .packageList::-webkit-scrollbar,
-.highlightedCode::-webkit-scrollbar,
 .errorStack::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 .fileList::-webkit-scrollbar-track,
-.codeContent::-webkit-scrollbar-track,
 .consolePanel::-webkit-scrollbar-track,
 .terminalOutput::-webkit-scrollbar-track,
 .packageList::-webkit-scrollbar-track,
-.highlightedCode::-webkit-scrollbar-track,
 .errorStack::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .fileList::-webkit-scrollbar-thumb,
-.codeContent::-webkit-scrollbar-thumb,
 .consolePanel::-webkit-scrollbar-thumb,
 .terminalOutput::-webkit-scrollbar-thumb,
 .packageList::-webkit-scrollbar-thumb,
-.highlightedCode::-webkit-scrollbar-thumb,
 .errorStack::-webkit-scrollbar-thumb {
   background: hsl(var(--muted));
   border-radius: 4px;
 }
 
 .fileList::-webkit-scrollbar-thumb:hover,
-.codeContent::-webkit-scrollbar-thumb:hover,
 .consolePanel::-webkit-scrollbar-thumb:hover,
 .terminalOutput::-webkit-scrollbar-thumb:hover,
 .packageList::-webkit-scrollbar-thumb:hover,
-.highlightedCode::-webkit-scrollbar-thumb:hover,
 .errorStack::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
 }
@@ -1394,46 +1368,51 @@
   }
 }
 
-/* Syntax Highlighting */
-.token.comment {
-  color: hsl(var(--syntax-comment));
+/* Monaco Editor Specific Styles */
+.monaco-editor .margin {
+  background-color: hsl(var(--card));
 }
 
-.token.punctuation {
-  color: hsl(var(--syntax-punctuation));
+.monaco-editor .monaco-editor-background {
+  background-color: hsl(var(--card));
 }
 
-.token.property {
-  color: hsl(var(--syntax-property));
+.monaco-editor .line-numbers {
+  color: hsl(var(--muted-foreground));
 }
 
-.token.string {
-  color: hsl(var(--syntax-string));
+.monaco-editor .current-line {
+  border: none;
+  background-color: hsl(var(--accent) / 0.05);
 }
 
-.token.operator {
-  color: hsl(var(--syntax-operator));
+.monaco-editor .view-overlays .current-line {
+  border: none;
+  background-color: hsl(var(--accent) / 0.05);
 }
 
-.token.keyword {
-  color: hsl(var(--syntax-keyword));
+.monaco-editor .margin-view-overlays .current-line-margin {
+  border: none;
+  background-color: hsl(var(--accent) / 0.05);
 }
 
-.token.function {
-  color: hsl(var(--syntax-function));
+/* Terminal Entry Styles */
+.terminalEntry {
+  margin-bottom: 0.5rem;
 }
 
-.token.variable {
-  color: hsl(var(--syntax-variable));
+.terminalCommand {
+  display: flex;
+  align-items: center;
+  color: #0f0;
 }
 
-/* Python Support Comment */
-/* 
-TODO: Add Python backend support
-- Implement Python code execution engine
-- Add Python syntax highlighting
-- Create Python-specific console output handling
-- Support Python package management
-- Implement Python debugging tools
-*/
+.terminalCommandText {
+  margin-left: 0.5rem;
+}
 
+/* Ensure Monaco Editor fills container */
+.monaco-editor {
+  width: 100% !important;
+  height: 100% !important;
+}

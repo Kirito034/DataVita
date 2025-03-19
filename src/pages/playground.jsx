@@ -1,56 +1,12 @@
-"use client"
+import { useState, useEffect, useRef, useCallback } from "react";
+import { RefreshCw, Sun, Moon, ChevronLeft, ChevronRight, ChevronDown, Play, Download, Share, Settings, Plus, Trash2, Code, Terminal, Maximize2, Minimize2, FileText, FileCode, FileCodeIcon as FileCss, FileIcon as FileHtml, Eye, Home, Package, Search, AlertCircle, Info, Layers, List, Coffee, Folder, ExternalLink, Save, Upload, Database } from 'lucide-react';
+import * as Babel from "@babel/standalone";
+import JSZip from "jszip";
+import styles from "../styles/playground.module.css";
+import { Editor } from "@monaco-editor/react";
+import PlaygroundServices from "../services/playgroundServices";
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import {
-  RefreshCw,
-  Sun,
-  Moon,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Play,
-  Download,
-  Share,
-  Settings,
-  Plus,
-  Trash2,
-  Code,
-  Terminal,
-  Maximize2,
-  Minimize2,
-  FileText,
-  FileCode,
-  FileCodeIcon as FileCss,
-  FileIcon as FileHtml,
-  Eye,
-  Home,
-  Package,
-  Search,
-  AlertCircle,
-  Info,
-  Layers,
-  List,
-  Coffee,
-  Folder,
-} from "lucide-react"
-import Prism from "prismjs"
-import "prismjs/components/prism-markup"
-import "prismjs/components/prism-css"
-import "prismjs/components/prism-javascript"
-import "prismjs/components/prism-jsx"
-import "prismjs/components/prism-typescript"
-import "prismjs/components/prism-tsx"
-import "prismjs/components/prism-json"
-import "prismjs/themes/prism-tomorrow.css" // Using a better theme for syntax highlighting
-import * as Babel from "@babel/standalone"
-import JSZip from "jszip"
-import styles from "../styles/playground.module.css"
-import ErrorBoundary from '../components/ErrorBoundary'
-
-/**
- * Default templates for different file types
- * These provide starter code for users creating new files
- */
+// Default templates for different file types
 const DEFAULT_TEMPLATES = {
   html: `<!DOCTYPE html>
 <html lang="en">
@@ -58,16 +14,13 @@ const DEFAULT_TEMPLATES = {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Playground</title>
-  <!-- CSS file reference -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="app"></div>
-  <!-- JavaScript file reference -->
   <script src="script.js"></script>
 </body>
 </html>`,
-
   css: `/* Base styles */
 * {
   margin: 0;
@@ -108,7 +61,6 @@ button {
 button:hover {
   background-color: #0060df;
 }`,
-
   javascript: `// JavaScript code
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.getElementById('app');
@@ -131,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Log a message to the console
   console.log('Application initialized');
 });`,
-
   jsx: `// React JSX code
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -174,65 +125,6 @@ function App() {
 
 // Render the App component to the DOM
 ReactDOM.render(<App />, document.getElementById('app'));`,
-
-  tsx: `// React TypeScript code
-import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
-
-// Define types for props
-interface ButtonProps {
-  onClick: () => void;
-  children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
-}
-
-// Button component with TypeScript
-const Button: React.FC<ButtonProps> = ({ 
-  onClick, 
-  children, 
-  variant = 'primary' 
-}) => (
-  <button 
-    onClick={onClick}
-    style={{
-      padding: '0.5rem 1rem',
-      backgroundColor: variant === 'primary' ? '#0070f3' : '#f5f5f5',
-      color: variant === 'primary' ? 'white' : '#333',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer'
-    }}
-  >
-    {children}
-  </button>
-);
-
-// Define types for App props
-interface AppProps {
-  title?: string;
-}
-
-// Main App component with TypeScript
-const App: React.FC<AppProps> = ({ title = "TypeScript React Playground" }) => {
-  const [count, setCount] = useState<number>(0);
-  
-  return (
-    <div className="app">
-      <h1>{title}</h1>
-      <p>Count: {count}</p>
-      <Button onClick={() => setCount(count + 1)}>
-        Increment
-      </Button>
-      <Button variant="secondary" onClick={() => setCount(0)}>
-        Reset
-      </Button>
-    </div>
-  );
-};
-
-// Render the App component to the DOM
-ReactDOM.render(<App />, document.getElementById('app'));`,
-
   json: `{
   "name": "playground-project",
   "version": "1.0.0",
@@ -243,115 +135,89 @@ ReactDOM.render(<App />, document.getElementById('app'));`,
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.4",
     "eslint": "^8.38.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   }
 }`,
-}
+};
 
-/**
- * CDN links for React and other libraries
- * These are injected into the preview iframe when needed
- */
+// CDN links for React and other libraries
 const CDN_LINKS = {
   react: "https://unpkg.com/react@18/umd/react.development.js",
   reactDom: "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
   babel: "https://unpkg.com/@babel/standalone/babel.min.js",
-}
+};
 
-/**
- * Popular npm packages for quick installation
- * These are shown in the package installer section
- */
+// NPM Registry API
+const NPM_REGISTRY_API = "https://registry.npmjs.org";
+
+// Popular npm packages for quick installation
 const POPULAR_PACKAGES = [
   { name: "react", version: "18.2.0", description: "A JavaScript library for building user interfaces." },
   { name: "react-dom", version: "18.2.0", description: "React package for working with the DOM." },
-  {
-    name: "lodash",
-    version: "4.17.21",
-    description: "A modern JavaScript utility library delivering modularity, performance & extras.",
-  },
+  { name: "lodash", version: "4.17.21", description: "A modern JavaScript utility library delivering modularity, performance & extras." },
   { name: "axios", version: "1.4.0", description: "Promise based HTTP client for the browser and node.js" },
-  {
-    name: "tailwindcss",
-    version: "3.3.2",
-    description: "A utility-first CSS framework for rapidly building custom designs.",
-  },
-  { name: "typescript", version: "5.0.4", description: "TypeScript is a language for application-scale JavaScript." },
-  { name: "next", version: "13.4.4", description: "The React Framework for Production" },
-  { name: "express", version: "4.18.2", description: "Fast, unopinionated, minimalist web framework for node." },
-  {
-    name: "mongoose",
-    version: "7.2.2",
-    description: "MongoDB object modeling designed to work in an asynchronous environment.",
-  },
-  { name: "redux", version: "4.2.1", description: "Predictable state container for JavaScript apps" },
-]
+  { name: "prettier", version: "2.8.8", description: "Code formatter" },
+  { name: "eslint", version: "8.0.0", description: "JavaScript linter" },
+  { name: "vite", version: "4.4.9", description: "Next generation frontend tooling" },
+  { name: "@vitejs/plugin-react", version: "4.0.4", description: "React plugin for Vite" },
+  { name: "zustand", version: "4.4.1", description: "Bear necessities for state management in React" },
+  { name: "tailwindcss", version: "3.3.3", description: "A utility-first CSS framework for rapidly building custom user interfaces" },
+];
 
-/**
- * Playground Component - An interactive code editor and preview environment
- *
- * Features:
- * - Multi-file support with file management
- * - Syntax highlighting for HTML, CSS, JavaScript, JSX, and TSX
- * - Line numbers with error indicators
- * - Live preview with auto-refresh
- * - Console output for debugging
- * - Package installation interface
- * - Dark/light theme toggle
- * - Project export and sharing
- */
 export default function Playground() {
-  // =========================================================================
-  // STATE MANAGEMENT
-  // =========================================================================
+  const [theme, setTheme] = useState("light");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showLineNumbers, setShowLineNumbers] = useState(true);
+  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
+  const [activeTab, setActiveTab] = useState("editor");
+  const [editorLayout, setEditorLayout] = useState("horizontal");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [previewError, setPreviewError] = useState(null);
+  const [shareUrl, setShareUrl] = useState("");
+  const [activeSidebarTab, setActiveSidebarTab] = useState("files");
+  const [fileViewMode, setFileViewMode] = useState("tree");
 
-  // UI Configuration
-  const [theme, setTheme] = useState("light")
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isFullScreen, setIsFullScreen] = useState(false)
-  const [showLineNumbers, setShowLineNumbers] = useState(true)
-  const [isAutoRefresh, setIsAutoRefresh] = useState(true)
-  const [activeTab, setActiveTab] = useState("editor") // 'editor' or 'preview'
-  const [editorLayout, setEditorLayout] = useState("horizontal") // 'horizontal' or 'vertical'
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [previewError, setPreviewError] = useState(null)
-  const [shareUrl, setShareUrl] = useState("")
-  const [activeSidebarTab, setActiveSidebarTab] = useState("files") // 'files', 'packages'
-  const [fileViewMode, setFileViewMode] = useState("tree") // 'tree' or 'list'
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
+  const [newFileType, setNewFileType] = useState("javascript");
+  const [files, setFiles] = useState([]);
+  const [activeFile, setActiveFile] = useState(null);
+  const [expandedFolders, setExpandedFolders] = useState({});
 
-  // File Management
-  const [isCreatingFile, setIsCreatingFile] = useState(false)
-  const [newFileName, setNewFileName] = useState("")
-  const [newFileType, setNewFileType] = useState("javascript")
-  const [files, setFiles] = useState([])
-  const [activeFile, setActiveFile] = useState(null)
-  const [expandedFolders, setExpandedFolders] = useState({})
+  const [packages, setPackages] = useState([]);
+  const [packageSearch, setPackageSearch] = useState("");
+  const [isInstallingPackage, setIsInstallingPackage] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  // Package Management
-  const [packages, setPackages] = useState([])
-  const [packageSearch, setPackageSearch] = useState("")
-  const [isInstallingPackage, setIsInstallingPackage] = useState(false)
+  const [consoleOutput, setConsoleOutput] = useState([]);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(true);
+  const [activeBottomTab, setActiveBottomTab] = useState("console");
+  const [isBottomPanelOpen, setIsBottomPanelOpen] = useState(true);
+  const [terminalInput, setTerminalInput] = useState("");
+  const [terminalHistory, setTerminalHistory] = useState([]);
 
-  // Console and Terminal
-  const [consoleOutput, setConsoleOutput] = useState([])
-  const [isConsoleOpen, setIsConsoleOpen] = useState(true)
-  const [activeBottomTab, setActiveBottomTab] = useState("console") // 'console', 'terminal'
-  const [isBottomPanelOpen, setIsBottomPanelOpen] = useState(true)
-  const [terminalInput, setTerminalInput] = useState("")
-  const [terminalHistory, setTerminalHistory] = useState([])
-
-  // Error Tracking
-  const [syntaxErrors, setSyntaxErrors] = useState([])
-  const [runtimeErrors, setRuntimeErrors] = useState([])
-
-  // Editor Settings
+  const [syntaxErrors, setSyntaxErrors] = useState([]);
+  const [runtimeErrors, setRuntimeErrors] = useState([]);
+  
+  // Context menu state - moved outside of renderFileTree to avoid conditional hooks
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, fileId: null });
+  
+  // Monaco editor instance reference
+  const editorRef = useRef(null);
+  
+  // User state for file management
+const userId = localStorage.getItem("user_id"); // Mock user ID, replace with actual auth
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null);
+  
   const [settings, setSettings] = useState({
     fontSize: 14,
     tabSize: 2,
@@ -364,234 +230,35 @@ export default function Playground() {
     indentGuides: true,
     autoClosingBrackets: true,
     highlightActiveLine: true,
-  })
+    autoSave: false,
+  });
 
-  // Refs
-  const editorRef = useRef(null)
-  const editorWrapperRef = useRef(null)
-  const iframeRef = useRef(null)
-  const consoleEndRef = useRef(null)
-  const terminalInputRef = useRef(null)
-  const highlightedCodeRef = useRef(null)
-  const lineNumbersRef = useRef(null)
+  const iframeRef = useRef(null);
+  const consoleEndRef = useRef(null);
+  const terminalInputRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
+  const autoSaveTimeoutRef = useRef(null);
 
-  /**
-   * Add a log message to the console
-   */
-  const addConsoleLog = (message, type = "log") => {
-    setConsoleOutput((prev) => [
-      ...prev,
-      {
-        type,
-        message,
-        timestamp: new Date().toLocaleTimeString(),
-      },
-    ])
-  }
-
-  /**
-   * Update the preview iframe with the current code
-   */
-  const updatePreview = useCallback(async () => {
-    try {
-      setIsProcessing(true)
-      setPreviewError(null)
-      setRuntimeErrors([])
-
-      // Get HTML file content
-      const htmlFile = files.find((f) => f.name.endsWith(".html"))
-      const htmlContent = htmlFile?.content || DEFAULT_TEMPLATES.html
-
-      // Process and inject CSS
-      const cssFiles = files.filter((f) => f.name.endsWith(".css"))
-      const cssContent = cssFiles.map((f) => f.content).join("\n")
-
-      // Process and inject JavaScript/JSX/TSX
-      const jsFiles = files.filter((f) => f.name.endsWith(".js"))
-      const jsxFiles = files.filter((f) => f.name.endsWith(".jsx") || f.name.endsWith(".tsx"))
-
-      // Regular JS content
-      const jsContent = jsFiles.map((f) => f.content).join("\n")
-
-      // JSX content needs to be transpiled
-      let jsxContent = ""
-      try {
-        // Check if we have JSX files
-        if (jsxFiles.length > 0) {
-          // Transpile each JSX file
-          for (const file of jsxFiles) {
-            try {
-              const transpiled = Babel.transform(file.content, {
-                presets: ["react"],
-                filename: file.name, // Add filename for better error messages
-              }).code
-
-              jsxContent += `
-// File: ${file.name}
-${transpiled}
-`
-            } catch (error) {
-              throw new Error(`Error transpiling ${file.name}: ${error.message}`)
-            }
-          }
-        }
-      } catch (error) {
-        setPreviewError(`JSX Transpilation Error: ${error.message}`)
-        addConsoleLog(`JSX Transpilation Error: ${error.message}`, "error")
-        setIsProcessing(false)
-        return
-      }
-
-      // Create a new HTML document
-      const doc = new DOMParser().parseFromString(htmlContent, "text/html")
-
-      // Add CSS
-      const style = doc.createElement("style")
-      style.textContent = cssContent
-      doc.head.appendChild(style)
-
-      // Add React and Babel if JSX files exist
-      if (jsxFiles.length > 0) {
-        // Add React
-        const reactScript = doc.createElement("script")
-        reactScript.src = CDN_LINKS.react
-        reactScript.crossOrigin = "anonymous"
-        doc.head.appendChild(reactScript)
-
-        // Add ReactDOM
-        const reactDomScript = doc.createElement("script")
-        reactDomScript.src = CDN_LINKS.reactDom
-        reactDomScript.crossOrigin = "anonymous"
-        doc.head.appendChild(reactDomScript)
-
-        // Wait for React to load before executing JSX
-        const waitForReactScript = doc.createElement("script")
-        waitForReactScript.textContent = `
-        // Wait for React to load
-        function checkReactLoaded() {
-          if (window.React && window.ReactDOM) {
-            initializeApp();
-          } else {
-            setTimeout(checkReactLoaded, 50);
-          }
-        }
-        checkReactLoaded();
-      `
-        doc.head.appendChild(waitForReactScript)
-      }
-
-      // Add JS with error handling
-      const script = doc.createElement("script")
-      script.textContent = `
-      // Capture console logs and errors
-      (function() {
-        const originalConsole = {
-          log: console.log,
-          error: console.error,
-          warn: console.warn,
-          info: console.info
-        };
-        
-        function sendMessageToParent(type, args, errorDetails) {
-          window.parent.postMessage({
-            source: 'playground-console',
-            type: type,
-            args: Array.from(args).map(arg => 
-              typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-            ).join(' '),
-            errorDetails
-          }, '*');
-        }
-        
-        console.log = function() {
-          sendMessageToParent('log', arguments);
-          originalConsole.log.apply(console, arguments);
-        };
-        
-        console.error = function() {
-          sendMessageToParent('error', arguments);
-          originalConsole.error.apply(console, arguments);
-        };
-        
-        console.warn = function() {
-          sendMessageToParent('warning', arguments);
-          originalConsole.warn.apply(console, arguments);
-        };
-        
-        console.info = function() {
-          sendMessageToParent('info', arguments);
-          originalConsole.info.apply(console, arguments);
-        };
-        
-        window.onerror = function(message, filename, lineno, colno, error) {
-          sendMessageToParent('error', [message + ' (Line: ' + lineno + ', Col: ' + colno + ')'], {
-            message,
-            filename,
-            lineno,
-            colno,
-            stack: error ? error.stack : null
-          });
-          return true;
-        };
-      })();
-      
-      function initializeApp() {
-        try {
-          // Regular JavaScript
-          ${jsContent}
-          
-          // Transpiled JSX
-          ${jsxContent}
-        } catch (error) {
-          console.error('Runtime error:', error.message);
-        }
-      }
-      
-      // If no JSX files, initialize immediately
-      if (${jsxFiles.length === 0}) {
-        initializeApp();
-      }
-    `
-      doc.body.appendChild(script)
-
-      // Set the processed HTML
-      const finalHtml = doc.documentElement.outerHTML
-
-      // Update the iframe
-      if (iframeRef.current) {
-        iframeRef.current.srcdoc = finalHtml
-      }
-
-      addConsoleLog("Preview updated successfully", "success")
-    } catch (error) {
-      setPreviewError(error.message)
-      addConsoleLog(`Preview error: ${error.message}`, "error")
-    } finally {
-      setIsProcessing(false)
-    }
-  }, [files])
-
-  // =========================================================================
-  // INITIALIZATION AND EFFECTS
-  // =========================================================================
-
-  /**
-   * Initialize the playground with default files
-   */
+  // Initialize with default files
   useEffect(() => {
-    // Create default files for a new playground
     const defaultFiles = [
       { id: 1, name: "index.html", type: "html", content: DEFAULT_TEMPLATES.html, path: "/" },
       { id: 2, name: "styles.css", type: "css", content: DEFAULT_TEMPLATES.css, path: "/" },
       { id: 3, name: "script.js", type: "javascript", content: DEFAULT_TEMPLATES.javascript, path: "/" },
       { id: 4, name: "package.json", type: "json", content: DEFAULT_TEMPLATES.json, path: "/" },
-    ]
-    setFiles(defaultFiles)
-    setActiveFile(defaultFiles[0])
+    ];
+    
+    // Load user files from API
+    loadUserFiles();
+    
+    // If no files are loaded, use defaults
+    if (files.length === 0) {
+      setFiles(defaultFiles);
+      setActiveFile(defaultFiles[0]);
+    }
 
-    // Initialize packages from package.json
     try {
-      const packageJson = JSON.parse(DEFAULT_TEMPLATES.json)
+      const packageJson = JSON.parse(DEFAULT_TEMPLATES.json);
       const initialPackages = [
         ...Object.entries(packageJson.dependencies || {}).map(([name, version]) => ({
           name,
@@ -603,102 +270,228 @@ ${transpiled}
           version: version.replace("^", ""),
           type: "devDependency",
         })),
-      ]
-      setPackages(initialPackages)
+      ];
+      setPackages(initialPackages);
     } catch (error) {
-      console.error("Error parsing package.json:", error)
+      console.error("Error parsing package.json:", error);
     }
 
-    // Add welcome message to console
-    addConsoleLog("Playground initialized. Ready to code!", "info")
-  }, [])
-
-  /**
-   * Auto-scroll console to bottom when new logs are added
-   */
-  useEffect(() => {
-    if (consoleEndRef.current) {
-      consoleEndRef.current.scrollIntoView({ behavior: "smooth" })
+    addConsoleLog("Playground initialized. Ready to code!", "info");
+    
+    // Set theme based on system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme("dark");
+      document.documentElement.setAttribute("data-theme", "dark");
     }
-  }, [consoleOutput])
+  }, []);
 
-  /**
-   * Update preview when code changes and auto-refresh is enabled
-   */
-  useEffect(() => {
-    if (!isAutoRefresh || !activeFile) return
-
-    const timer = setTimeout(() => {
-      updatePreview()
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [files, isAutoRefresh, activeFile, updatePreview])
-
-  // Add the handleTabChange function to the component
-  /**
-   * Handle tab changes between editor and preview
-   */
-  const handleTabChange = (tab) => {
-    setActiveTab(tab)
-
-    // If switching to preview, update the preview
-    if (tab === "preview") {
-      updatePreview()
-    }
-  }
-
-  // Optimize the syntax highlighting implementation
-  /**
-   * Apply syntax highlighting to the active file
-   */
-  useEffect(() => {
-    if (!activeFile || !editorRef.current || !highlightedCodeRef.current) return
-
-    // Check for syntax errors
-    validateSyntax(activeFile)
-
-    // Apply syntax highlighting
+  // Load user files from API
+  const loadUserFiles = async () => {
+    if (!userId) return;
+    
+    setIsLoading(true);
+    addConsoleLog("Loading your files...", "info");
+    
     try {
-      const language = getLanguage(activeFile.type)
-      const highlightedCode = Prism.highlight(activeFile.content || "", language, activeFile.type)
+      const userFiles = await PlaygroundServices.getUserFiles(userId);
+      
+      if (userFiles && userFiles.length > 0) {
+        // Transform API data to match our file structure
+        const transformedFiles = userFiles.map(file => ({
+          id: file.id,
+          name: file.name,
+          type: file.type || getFileTypeFromName(file.name),
+          content: file.content,
+          path: file.path || "/",
+          lastModified: file.lastModified || new Date().toISOString()
+        }));
+        
+        setFiles(transformedFiles);
+        setActiveFile(transformedFiles[0]);
+        addConsoleLog(`Loaded ${transformedFiles.length} files successfully`, "success");
+      } else {
+        addConsoleLog("No saved files found. Using default templates.", "info");
+      }
+    } catch (error) {
+      console.error("Error loading files:", error);
+      addConsoleLog(`Failed to load files: ${error.message}`, "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      highlightedCodeRef.current.innerHTML = highlightedCode
+  // Get file type from file name
+  const getFileTypeFromName = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    switch (extension) {
+      case 'html': return 'html';
+      case 'css': return 'css';
+      case 'js': return 'javascript';
+      case 'jsx': return 'jsx';
+      case 'json': return 'json';
+      default: return 'text';
+    }
+  };
 
-      // Sync scroll position between editor and highlighted code
-      const syncScroll = () => {
-        if (highlightedCodeRef.current && editorRef.current) {
-          highlightedCodeRef.current.scrollTop = editorRef.current.scrollTop
-          highlightedCodeRef.current.scrollLeft = editorRef.current.scrollLeft
+  // Save current file to API
+  const saveCurrentFile = async () => {
+    if (!activeFile || !userId) return;
+    
+    setIsSaving(true);
+    setSaveStatus("saving");
+    
+    try {
+      const fileData = {
+        id: activeFile.id,
+        name: activeFile.name,
+        content: activeFile.content,
+        type: activeFile.type,
+        path: activeFile.path,
+        userId: userId,
+        lastModified: new Date().toISOString()
+      };
+      
+      // If file has an ID from the server, update it, otherwise create new
+      let response;
+      if (typeof activeFile.id === 'number' || (typeof activeFile.id === 'string' && !activeFile.id.startsWith('local_'))) {
+        response = await PlaygroundServices.updateFile(activeFile.id, fileData);
+        addConsoleLog(`Updated file: ${activeFile.name}`, "success");
+      } else {
+        response = await PlaygroundServices.saveFile(fileData);
+        // Update the file ID in our state with the one from the server
+        setFiles(prev => prev.map(file => 
+          file.id === activeFile.id ? { ...file, id: response.id } : file
+        ));
+        setActiveFile(prev => ({ ...prev, id: response.id }));
+        addConsoleLog(`Saved new file: ${activeFile.name}`, "success");
+      }
+      
+      setSaveStatus("saved");
+      
+      // Reset save status after a delay
+      setTimeout(() => {
+        setSaveStatus(null);
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error saving file:", error);
+      addConsoleLog(`Failed to save file: ${error.message}`, "error");
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-          if (lineNumbersRef.current) {
-            lineNumbersRef.current.scrollTop = editorRef.current.scrollTop
+  // Save all files to API
+  const saveAllFiles = async () => {
+    if (!userId || files.length === 0) return;
+    
+    setIsSaving(true);
+    setSaveStatus("saving");
+    addConsoleLog("Saving all files...", "info");
+    
+    try {
+      // Process files in sequence to avoid race conditions
+      for (const file of files) {
+        const fileData = {
+          id: file.id,
+          name: file.name,
+          content: file.content,
+          type: file.type,
+          path: file.path,
+          userId: userId,
+          lastModified: new Date().toISOString()
+        };
+        
+        // If file has an ID from the server, update it, otherwise create new
+        if (typeof file.id === 'number' || (typeof file.id === 'string' && !file.id.startsWith('local_'))) {
+          await PlaygroundServices.updateFile(file.id, fileData);
+        } else {
+          const response = await PlaygroundServices.saveFile(fileData);
+          // Update the file ID in our state
+          setFiles(prev => prev.map(f => 
+            f.id === file.id ? { ...f, id: response.id } : f
+          ));
+          if (activeFile && activeFile.id === file.id) {
+            setActiveFile(prev => ({ ...prev, id: response.id }));
           }
         }
       }
-
-      editorRef.current.addEventListener("scroll", syncScroll)
-      return () => {
-        if (editorRef.current) {
-          editorRef.current.removeEventListener("scroll", syncScroll)
-        }
-      }
+      
+      setSaveStatus("saved");
+      addConsoleLog(`Saved ${files.length} files successfully`, "success");
+      
+      // Reset save status after a delay
+      setTimeout(() => {
+        setSaveStatus(null);
+      }, 2000);
+      
     } catch (error) {
-      console.error("Error applying syntax highlighting:", error)
+      console.error("Error saving files:", error);
+      addConsoleLog(`Failed to save files: ${error.message}`, "error");
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
     }
-  }, [activeFile, syntaxErrors])
+  };
 
-  /**
-   * Listen for console messages from the iframe
-   */
+  // Delete file from API
+  const deleteFileFromServer = async (fileId) => {
+    if (!fileId) return;
+    
+    try {
+      await PlaygroundServices.deleteFile(fileId);
+      addConsoleLog("File deleted from server", "success");
+    } catch (error) {
+      console.error("Error deleting file from server:", error);
+      addConsoleLog(`Failed to delete file from server: ${error.message}`, "error");
+    }
+  };
+
+  // Auto-scroll console to bottom when new logs are added
+  useEffect(() => {
+    if (consoleEndRef.current) {
+      consoleEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [consoleOutput]);
+
+  // Auto-refresh preview when files change
+  useEffect(() => {
+    if (!isAutoRefresh || !activeFile) return;
+
+    const timer = setTimeout(() => {
+      updatePreview();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [files, isAutoRefresh, activeFile]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!settings.autoSave || !activeFile?.content) return;
+    
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      saveCurrentFile();
+    }, 3000); // Auto-save after 3 seconds of inactivity
+    
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [activeFile?.content, settings.autoSave]);
+
+  // Handle console messages from the preview iframe
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.data && event.data.source === "playground-console") {
         if (event.data.type === "error" && event.data.errorDetails) {
-          // Handle detailed error information
-          const { message, filename, lineno, colno, stack } = event.data.errorDetails
+          const { message, filename, lineno, colno, stack } = event.data.errorDetails;
 
-          // Add to runtime errors
           setRuntimeErrors((prev) => [
             ...prev,
             {
@@ -708,778 +501,1000 @@ ${transpiled}
               column: colno,
               stack,
             },
-          ])
+          ]);
 
-          // Format error message for console
-          const formattedMessage = `${message} (${filename}:${lineno}:${colno})`
-          addConsoleLog(formattedMessage, "error")
+          const formattedMessage = `${message} (${filename}:${lineno}:${colno})`;
+          addConsoleLog(formattedMessage, "error");
         } else {
-          // Handle regular console logs
-          addConsoleLog(event.data.args, event.data.type)
+          addConsoleLog(event.data.args, event.data.type);
         }
       }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  // Search for npm packages when packageSearch changes
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
 
-    window.addEventListener("message", handleMessage)
-    return () => window.removeEventListener("message", handleMessage)
-  }, [])
+    if (packageSearch.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
 
-  // =========================================================================
-  // UTILITY FUNCTIONS
-  // =========================================================================
+    setIsSearching(true);
 
-  /**
-   * Toggle between light and dark theme
-   */
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`${NPM_REGISTRY_API}/-/v1/search?text=${encodeURIComponent(packageSearch)}&size=10`);
+        const data = await response.json();
+        
+        const results = data.objects.map(obj => ({
+          name: obj.package.name,
+          version: obj.package.version,
+          description: obj.package.description || 'No description available',
+          keywords: obj.package.keywords || [],
+          date: obj.package.date,
+          links: obj.package.links,
+          publisher: obj.package.publisher,
+          score: obj.score
+        }));
+        
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Error searching npm packages:", error);
+        addConsoleLog(`Failed to search packages: ${error.message}`, "error");
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [packageSearch]);
+
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.visible) {
+        setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [contextMenu.visible]);
+
+  // Toggle between light and dark theme
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light"
-    setTheme(newTheme)
-    document.documentElement.setAttribute("data-theme", newTheme)
-  }
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
 
-  /**
-   * Get the appropriate language for syntax highlighting based on file type
-   */
-  const getLanguage = (fileType) => {
-    switch (fileType) {
-      case "html":
-        return Prism.languages.html
-      case "css":
-        return Prism.languages.css
-      case "javascript":
-        return Prism.languages.javascript
-      case "jsx":
-        return Prism.languages.jsx
-      case "tsx":
-      case "typescript":
-        return Prism.languages.typescript
-      case "json":
-        return Prism.languages.json
-      default:
-        return Prism.languages.javascript
-    }
-  }
-
-  /**
-   * Get the appropriate file icon based on file type
-   */
+  // Get file icon based on file type
   const getFileIcon = (fileType) => {
     switch (fileType) {
       case "html":
-        return <FileHtml size={16} />
+        return <FileHtml size={16} />;
       case "css":
-        return <FileCss size={16} />
+        return <FileCss size={16} />;
       case "javascript":
-        return <FileCode size={16} />
       case "jsx":
-        return <FileCode size={16} />
-      case "tsx":
-      case "typescript":
-        return <FileCode size={16} />
+        return <FileCode size={16} />;
       case "json":
-        return <FileCode size={16} />
+        return <FileCode size={16} />;
       default:
-        return <FileText size={16} />
+        return <FileText size={16} />;
     }
-  }
+  };
 
-  /**
-   * Create line numbers for the code editor
-   * Includes error indicators for lines with syntax errors
-   */
-  const getLineNumbers = (content) => {
-    if (!content) return "1"
-    const lines = content.split("\n")
-
-    // Map each line number, adding error indicators if needed
-    return lines
-      .map((_, i) => {
-        const lineNum = i + 1
-        const hasError = syntaxErrors.some((err) => err.line === lineNum)
-        return `${hasError ? "⚠️ " : ""}${lineNum}`
-      })
-      .join("\n")
-  }
-
-  /**
-   * Validate syntax of the current file
-   * This is a simplified version - a real implementation would use a proper parser
-   */
-  const validateSyntax = (file) => {
-    if (!file || !file.content) {
-      setSyntaxErrors([])
-      return
-    }
-
-    const errors = []
-    const lines = file.content.split("\n")
-
-    // Simple syntax validation based on file type
-    switch (file.type) {
-      case "javascript":
-      case "jsx":
-        try {
-          // For JSX, try to transpile with Babel
-          if (file.type === "jsx") {
-            Babel.transform(file.content, {
-              presets: ["react"],
-            })
-          } else {
-            // For regular JS, use Function constructor to check syntax
-            new Function(file.content)
-          }
-        } catch (e) {
-          // Extract line and column from error message
-          const lineMatch = e.message.match(/$$(\d+):(\d+)$$/)
-          let line = 1
-          let column = 1
-
-          if (lineMatch) {
-            line = Number.parseInt(lineMatch[1])
-            column = Number.parseInt(lineMatch[2])
-          }
-
-          errors.push({
-            message: e.message,
-            line,
-            column,
-            severity: "error",
-            source: file.name,
-          })
-        }
-        break
-
+  // Get language ID for Monaco editor
+  const getLanguageId = (fileType) => {
+    switch (fileType) {
       case "html":
-        // Check for unclosed tags
-        const tagStack = []
-        const tagRegex = /<\/?([a-zA-Z][a-zA-Z0-9]*)(?: [^>]*)?>/g
-        let match
-        const content = file.content
-        let lastIndex = 0
-        let lineCount = 1
-
-        while ((match = tagRegex.exec(content)) !== null) {
-          // Count lines up to this match
-          lineCount += (content.substring(lastIndex, match.index).match(/\n/g) || []).length
-          lastIndex = match.index
-
-          const fullTag = match[0]
-          const tagName = match[1].toLowerCase()
-
-          // Skip self-closing tags
-          if (fullTag.endsWith("/>") || ["meta", "link", "img", "br", "hr", "input"].includes(tagName)) {
-            continue
-          }
-
-          if (fullTag.startsWith("</")) {
-            // Closing tag
-            if (tagStack.length === 0 || tagStack[tagStack.length - 1].name !== tagName) {
-              errors.push({
-                message: `Unexpected closing tag: '${tagName}'`,
-                line: lineCount,
-                column: match.index - lastIndex + 1,
-                severity: "error",
-                source: file.name,
-              })
-            } else {
-              tagStack.pop()
-            }
-          } else {
-            // Opening tag
-            tagStack.push({ name: tagName, line: lineCount })
-          }
-        }
-
-        // Check for unclosed tags at the end
-        tagStack.forEach((tag) => {
-          errors.push({
-            message: `Unclosed tag: '${tag.name}'`,
-            line: tag.line,
-            column: 1,
-            severity: "error",
-            source: file.name,
-          })
-        })
-        break
-
+        return "html";
       case "css":
-        // Check for unclosed braces
-        let braces = 0
-
-        lines.forEach((line, lineIndex) => {
-          for (let i = 0; i < line.length; i++) {
-            if (line[i] === "{") {
-              braces++
-            } else if (line[i] === "}") {
-              braces--
-              if (braces < 0) {
-                errors.push({
-                  message: "Unexpected closing brace",
-                  line: lineIndex + 1,
-                  column: i + 1,
-                  severity: "error",
-                  source: file.name,
-                })
-                braces = 0
-              }
-            }
-          }
-        })
-
-        if (braces > 0) {
-          errors.push({
-            message: "Unclosed braces in CSS",
-            line: lines.length,
-            column: lines[lines.length - 1].length,
-            severity: "error",
-            source: file.name,
-          })
-        }
-        break
-
+        return "css";
+      case "javascript":
+        return "javascript";
+      case "jsx":
+        return "javascript";
       case "json":
-        try {
-          JSON.parse(file.content)
-        } catch (e) {
-          // Extract line and column from error message if possible
-          const match = e.message.match(/at position (\d+)/)
-          const position = match ? Number.parseInt(match[1]) : 0
+        return "json";
+      default:
+        return "javascript";
+    }
+  };
 
-          // Calculate line and column
-          let line = 1
-          let column = 1
-          for (let i = 0; i < position && i < file.content.length; i++) {
-            if (file.content[i] === "\n") {
-              line++
-              column = 1
-            } else {
-              column++
-            }
-          }
-
-          errors.push({
-            message: `Invalid JSON: ${e.message}`,
-            line,
-            column,
-            severity: "error",
-            source: file.name,
-          })
+  // Handle editor initialization
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+    
+    // Set editor options based on settings
+    editor.updateOptions({
+      fontSize: settings.fontSize,
+      tabSize: settings.tabSize,
+      wordWrap: settings.wordWrap ? "on" : "off",
+      minimap: { enabled: settings.minimap },
+      renderIndentGuides: settings.indentGuides,
+      autoClosingBrackets: settings.autoClosingBrackets ? "always" : "never",
+      renderLineHighlight: settings.highlightActiveLine ? "all" : "none",
+      lineNumbers: showLineNumbers ? "on" : "off",
+      automaticLayout: true,
+      scrollBeyondLastLine: false,
+      quickSuggestions: settings.autoComplete,
+      suggestOnTriggerCharacters: settings.autoComplete,
+      folding: true,
+      foldingStrategy: "auto",
+      matchBrackets: "always",
+      scrollbar: {
+        verticalScrollbarSize: 10,
+        horizontalScrollbarSize: 10,
+        alwaysConsumeMouseWheel: false
+      }
+    });
+    
+    // Set up model change listener for syntax validation
+    editor.onDidChangeModelContent(() => {
+      if (activeFile) {
+        const model = editor.getModel();
+        if (model) {
+          const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+          
+          const errors = markers.map(marker => ({
+            message: marker.message,
+            line: marker.startLineNumber,
+            column: marker.startColumn,
+            severity: marker.severity === 8 ? "error" : "warning",
+            source: activeFile.name,
+          }));
+          
+          setSyntaxErrors(errors);
         }
-        break
-    }
-
-    setSyntaxErrors(errors)
-  }
-
-  // =========================================================================
-  // EVENT HANDLERS
-  // =========================================================================
-
-  /**
-   * Handle tab key in the code editor
-   * Also handles auto-closing brackets if enabled
-   */
-  const handleKeyDown = (e) => {
-    if (e.key === "Tab") {
-      e.preventDefault()
-      const start = e.target.selectionStart
-      const end = e.target.selectionEnd
-      const value = e.target.value
-      const spaces = " ".repeat(settings.tabSize)
-      const newValue = value.substring(0, start) + spaces + value.substring(end)
-
-      // Update the content
-      if (activeFile) {
-        updateFileContent(activeFile.id, newValue)
       }
+    });
+    
+    // Add keyboard shortcut for saving
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      saveCurrentFile();
+    });
+  };
 
-      // Move cursor position
-      requestAnimationFrame(() => {
-        e.target.selectionStart = e.target.selectionEnd = start + settings.tabSize
-      })
-    } else if (
-      settings.autoClosingBrackets &&
-      (e.key === "{" || e.key === "(" || e.key === "[" || e.key === '"' || e.key === "'")
-    ) {
-      // Auto-closing brackets
-      const closingChar = {
-        "{": "}",
-        "(": ")",
-        "[": "]",
-        '"': '"',
-        "'": "'",
-      }[e.key]
+  // Handle editor content change
+  const handleEditorChange = (value) => {
+    if (!activeFile) return;
+    updateFileContent(activeFile.id, value);
+  };
 
-      const start = e.target.selectionStart
-      const value = e.target.value
-
-      // Insert opening and closing characters
-      const newValue = value.substring(0, start) + e.key + closingChar + value.substring(start)
-
-      e.preventDefault()
-
-      // Update content
-      if (activeFile) {
-        updateFileContent(activeFile.id, newValue)
-      }
-
-      // Move cursor between the brackets
-      requestAnimationFrame(() => {
-        e.target.selectionStart = e.target.selectionEnd = start + 1
-      })
-    }
-  }
-
-  /**
-   * Update file content when editor changes
-   */
-  const handleEditorChange = (e) => {
-    if (!activeFile) return
-
-    const newContent = e.target.value
-    updateFileContent(activeFile.id, newContent)
-  }
-
-  /**
-   * Handle terminal input submission
-   */
+  // Handle terminal command submission
   const handleTerminalSubmit = (e) => {
-    e.preventDefault()
-    if (!terminalInput.trim()) return
+    e.preventDefault();
+    if (!terminalInput.trim()) return;
 
-    // Add the command to history
-    setTerminalHistory((prev) => [...prev, { type: "command", content: terminalInput }])
+    setTerminalHistory((prev) => [...prev, { type: "command", content: terminalInput }]);
+    processTerminalCommand(terminalInput);
+    setTerminalInput("");
+  };
 
-    // Process the command (simplified)
-    processTerminalCommand(terminalInput)
-
-    // Clear the input
-    setTerminalInput("")
-  }
-
-  /**
-   * Process terminal commands
-   * This is a simplified version - a real implementation would be more complex
-   */
+  // Process terminal commands
   const processTerminalCommand = (command) => {
-    const cmd = command.trim()
-    let response = ""
+    const cmd = command.trim();
+    let response = "";
 
     if (cmd.startsWith("npm install") || cmd.startsWith("npm i")) {
-      const packageName = cmd.split(" ")[2]
+      const parts = cmd.split(" ");
+      const packageName = parts[2];
+      const isDev = parts.includes("--save-dev") || parts.includes("-D");
+      
       if (packageName) {
-        response = `Installing package: ${packageName}...`
+        response = `Installing package: ${packageName}${isDev ? ' (dev dependency)' : ''}...`;
+        
         // Simulate package installation
+        setTimeout(async () => {
+          try {
+            const packageInfo = await fetchPackageInfo(packageName);
+            if (packageInfo) {
+              installPackage(packageName, packageInfo.version, isDev ? "devDependency" : "dependency");
+              setTerminalHistory((prev) => [
+                ...prev,
+                { type: "output", content: `+ ${packageName}@${packageInfo.version} installed successfully` },
+              ]);
+            } else {
+              setTerminalHistory((prev) => [
+                ...prev,
+                { type: "output", content: `Error: Package ${packageName} not found` },
+              ]);
+            }
+          } catch (error) {
+            setTerminalHistory((prev) => [
+              ...prev,
+              { type: "output", content: `Error installing ${packageName}: ${error.message}` },
+            ]);
+          }
+        }, 1000);
+      } else {
+        response = "Error: Please specify a package name";
+      }
+    } else if (cmd.startsWith("npm uninstall") || cmd.startsWith("npm remove") || cmd.startsWith("npm r")) {
+      const packageName = cmd.split(" ")[2];
+      if (packageName) {
+        response = `Uninstalling package: ${packageName}...`;
         setTimeout(() => {
+          uninstallPackage(packageName);
           setTerminalHistory((prev) => [
             ...prev,
-            { type: "output", content: `+ ${packageName}@1.0.0 installed successfully` },
-          ])
-
-          // Add to packages list
-          setPackages((prev) => [...prev, { name: packageName, version: "1.0.0", type: "dependency" }])
-        }, 1500)
+            { type: "output", content: `- ${packageName} removed successfully` },
+          ]);
+        }, 1000);
       } else {
-        response = "Error: Please specify a package name"
+        response = "Error: Please specify a package name";
+      }
+    } else if (cmd === "npm list" || cmd === "npm ls") {
+      if (packages.length === 0) {
+        response = "No packages installed";
+      } else {
+        response = "Installed packages:\n" + packages.map(pkg => 
+          `${pkg.name}@${pkg.version} ${pkg.type === "devDependency" ? "(dev)" : ""}`
+        ).join("\n");
       }
     } else if (cmd === "clear" || cmd === "cls") {
-      // Clear the terminal
-      setTerminalHistory([])
-      return
+      setTerminalHistory([]);
+      return;
     } else if (cmd === "ls" || cmd === "dir") {
-      // List files
-      response = files.map((file) => file.name).join("\n")
+      response = files.map((file) => file.name).join("\n");
+    } else if (cmd === "save") {
+      response = "Saving current file...";
+      saveCurrentFile();
+    } else if (cmd === "save all") {
+      response = "Saving all files...";
+      saveAllFiles();
+    } else if (cmd === "load") {
+      response = "Loading files from server...";
+      loadUserFiles();
     } else if (cmd === "help") {
       response = `Available commands:
 npm install <package> - Install a package
+npm install <package> --save-dev - Install a dev dependency
+npm uninstall <package> - Remove a package
+npm list - List installed packages
 ls, dir - List files
+save - Save current file
+save all - Save all files
+load - Load files from server
 clear, cls - Clear terminal
-help - Show this help`
+help - Show this help`;
     } else {
-      response = `Command not found: ${cmd}. Type 'help' for available commands.`
+      response = `Command not found: ${cmd}. Type 'help' for available commands.`;
     }
 
-    setTerminalHistory((prev) => [...prev, { type: "output", content: response }])
-  }
+    setTerminalHistory((prev) => [...prev, { type: "output", content: response }]);
+  };
 
-  // =========================================================================
-  // FILE MANAGEMENT
-  // =========================================================================
+  // Fetch package info from npm registry
+  const fetchPackageInfo = async (packageName) => {
+    try {
+      const response = await fetch(`${NPM_REGISTRY_API}/${packageName}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch package info: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return {
+        name: data.name,
+        version: data['dist-tags'].latest,
+        description: data.description,
+        homepage: data.homepage,
+        repository: data.repository?.url,
+        license: data.license,
+        dependencies: data.versions[data['dist-tags'].latest].dependencies || {},
+        devDependencies: data.versions[data['dist-tags'].latest].devDependencies || {},
+      };
+    } catch (error) {
+      console.error(`Error fetching package info for ${packageName}:`, error);
+      addConsoleLog(`Failed to fetch package info: ${error.message}`, "error");
+      return null;
+    }
+  };
 
-  /**
-   * Update file content in the files array
-   */
+  // Update file content
   const updateFileContent = (fileId, newContent) => {
-    setFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, content: newContent } : file)))
+    setFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, content: newContent } : file)));
 
     if (activeFile && activeFile.id === fileId) {
-      setActiveFile((prev) => ({ ...prev, content: newContent }))
+      setActiveFile((prev) => ({ ...prev, content: newContent }));
     }
-  }
+  };
 
-  /**
-   * Create a new file or folder
-   */
+  // Create a new file
   const createNewFile = () => {
     if (!newFileName.trim()) {
-      addConsoleLog("File name cannot be empty", "error")
-      return
+      addConsoleLog("File name cannot be empty", "error");
+      return;
     }
 
-    // Check if file already exists
-    const fileExists = files.some((file) => file.name === newFileName && file.path === "/")
+    const fileExists = files.some((file) => file.name === newFileName && file.path === "/");
 
     if (fileExists) {
-      addConsoleLog(`File '${newFileName}' already exists`, "error")
-      return
+      addConsoleLog(`File '${newFileName}' already exists`, "error");
+      return;
     }
 
     const newFile = {
-      id: Date.now(),
+      id: `local_${Date.now()}`, // Use local_ prefix for unsaved files
       name: newFileName,
       type: newFileType,
       content: DEFAULT_TEMPLATES[newFileType] || "",
       path: "/",
+      lastModified: new Date().toISOString()
+    };
+
+    setFiles((prev) => [...prev, newFile]);
+    setActiveFile(newFile);
+    setIsCreatingFile(false);
+    setNewFileName("");
+
+    addConsoleLog(`Created new file: ${newFileName}`, "success");
+  };
+
+  // Delete a file
+  const deleteFile = (id) => {
+    const fileToDelete = files.find((file) => file.id === id);
+    if (!fileToDelete) return;
+
+    // If file exists on server, delete it there too
+    if (typeof fileToDelete.id === 'number' || (typeof fileToDelete.id === 'string' && !fileToDelete.id.startsWith('local_'))) {
+      deleteFileFromServer(fileToDelete.id);
     }
 
-    setFiles((prev) => [...prev, newFile])
-    setActiveFile(newFile)
-    setIsCreatingFile(false)
-    setNewFileName("")
-
-    addConsoleLog(`Created new file: ${newFileName}`, "success")
-  }
-
-  /**
-   * Delete a file
-   */
-  const deleteFile = (id) => {
-    const fileToDelete = files.find((file) => file.id === id)
-    if (!fileToDelete) return
-
-    setFiles((prev) => prev.filter((file) => file.id !== id))
+    setFiles((prev) => prev.filter((file) => file.id !== id));
 
     if (activeFile?.id === id) {
-      setActiveFile(files.length > 1 ? files.find((file) => file.id !== id) : null)
+      setActiveFile(files.length > 1 ? files.find((file) => file.id !== id) : null);
     }
 
-    addConsoleLog(`Deleted file: ${fileToDelete.name}`, "info")
-  }
+    addConsoleLog(`Deleted file: ${fileToDelete.name}`, "info");
+  };
 
-  /**
-   * Create a new folder
-   */
+  // Create a new folder
   const createNewFolder = () => {
-    const folderName = prompt("Enter folder name:")
-    if (!folderName) return
+    const folderName = prompt("Enter folder name:");
+    if (!folderName) return;
 
     const newFolder = {
-      id: Date.now(),
+      id: `local_folder_${Date.now()}`,
       name: folderName,
       type: "folder",
       path: "/",
       children: [],
-    }
+    };
 
-    setFiles((prev) => [...prev, newFolder])
+    setFiles((prev) => [...prev, newFolder]);
+    addConsoleLog(`Created new folder: ${folderName}`, "success");
+  };
 
-    addConsoleLog(`Created new folder: ${folderName}`, "success")
-  }
-
-  /**
-   * Toggle folder expansion
-   */
+  // Toggle folder expansion
   const toggleFolder = (id) => {
     setExpandedFolders((prev) => ({
       ...prev,
       [id]: !prev[id],
-    }))
-  }
+    }));
+  };
 
-  // =========================================================================
-  // CONSOLE AND LOGGING
-  // =========================================================================
-
-  /**
-   * Clear the console
-   */
-  const clearConsole = () => {
-    setConsoleOutput([])
-    setRuntimeErrors([])
-    addConsoleLog("Console cleared", "info")
-  }
-
-  // =========================================================================
-  // PACKAGE MANAGEMENT
-  // =========================================================================
-
-  /**
-   * Install a package
-   * This is a simulated implementation
-   */
-  const installPackage = (packageName, version, type = "dependency") => {
-    setIsInstallingPackage(true)
-
-    // Simulate package installation
-    setTimeout(() => {
-      try {
-        // Check if package is already installed
-        const existingPackage = packages.find((p) => p.name === packageName)
-
-        if (existingPackage) {
-          // Update version if different
-          if (existingPackage.version !== version) {
-            setPackages((prev) => prev.map((p) => (p.name === packageName ? { ...p, version, type } : p)))
-            addConsoleLog(`Updated ${packageName} to version ${version}`, "success")
-          } else {
-            addConsoleLog(`${packageName} is already installed`, "info")
+  // Handle context menu for files
+  const handleContextMenu = (event, fileId) => {
+    event.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      fileId
+    });
+  };
+  
+  // Handle context menu actions
+  const handleContextMenuAction = (action) => {
+    const file = files.find(f => f.id === contextMenu.fileId);
+    
+    switch(action) {
+      case 'rename':
+        if (file) {
+          const newName = prompt("Enter new name:", file.name);
+          if (newName && newName !== file.name) {
+            setFiles(prev => prev.map(f => 
+              f.id === contextMenu.fileId ? { ...f, name: newName } : f
+            ));
+            addConsoleLog(`Renamed ${file.name} to ${newName}`, "info");
           }
-        } else {
-          // Add new package
-          setPackages((prev) => [...prev, { name: packageName, version, type }])
-          addConsoleLog(`Installed ${packageName}@${version}`, "success")
         }
+        break;
+      case 'delete':
+        if (file) {
+          deleteFile(contextMenu.fileId);
+        }
+        break;
+      case 'duplicate':
+        if (file) {
+          const newFile = {
+            ...file,
+            id: `local_${Date.now()}`,
+            name: `Copy of ${file.name}`
+          };
+          setFiles(prev => [...prev, newFile]);
+          addConsoleLog(`Duplicated ${file.name}`, "info");
+        }
+        break;
+      case 'save':
+        if (file && file.id === activeFile?.id) {
+          saveCurrentFile();
+        } else if (file) {
+          // Set as active file and then save
+          setActiveFile(file);
+          setTimeout(() => saveCurrentFile(), 100);
+        }
+        break;
+    }
+    
+    setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
+  };
 
-        // Update package.json
-        updatePackageJson(packageName, version, type)
-      } catch (error) {
-        addConsoleLog(`Failed to install ${packageName}: ${error.message}`, "error")
-      } finally {
-        setIsInstallingPackage(false)
+  // Install a package
+  const installPackage = async (packageName, version, type = "dependency") => {
+    setIsInstallingPackage(true);
+
+    try {
+      // Check if package already exists
+      const existingPackage = packages.find((p) => p.name === packageName);
+
+      if (existingPackage) {
+        if (existingPackage.version !== version) {
+          setPackages((prev) =>
+            prev.map((p) => (p.name === packageName ? { ...p, version, type } : p))
+          );
+          addConsoleLog(`Updated ${packageName} to version ${version}`, "success");
+        } else if (existingPackage.type !== type) {
+          setPackages((prev) =>
+            prev.map((p) => (p.name === packageName ? { ...p, type } : p))
+          );
+          addConsoleLog(`Changed ${packageName} to ${type === "dependency" ? "regular" : "dev"} dependency`, "success");
+        } else {
+          addConsoleLog(`${packageName} is already installed`, "info");
+        }
+      } else {
+        // If package doesn't exist, fetch its details
+        let packageInfo = version ? { version } : null;
+        
+        if (!packageInfo) {
+          packageInfo = await fetchPackageInfo(packageName);
+          if (!packageInfo) {
+            throw new Error(`Package ${packageName} not found`);
+          }
+        }
+        
+        setPackages((prev) => [...prev, { 
+          name: packageName, 
+          version: packageInfo.version || version, 
+          type,
+          description: packageInfo.description || '',
+          homepage: packageInfo.homepage || '',
+        }]);
+        
+        addConsoleLog(`Installed ${packageName}@${packageInfo.version || version}`, "success");
       }
-    }, 1000) // Reduced delay for better UX
-  }
 
-  /**
-   * Update package.json with new package
-   */
+      // Update package.json
+      updatePackageJson(packageName, version, type);
+      
+      // If auto-refresh is enabled, update the preview
+      if (isAutoRefresh) {
+        setTimeout(() => {
+          updatePreview();
+        }, 500);
+      }
+    } catch (error) {
+      addConsoleLog(`Failed to install ${packageName}: ${error.message}`, "error");
+    } finally {
+      setIsInstallingPackage(false);
+    }
+  };
+
+  // Update package.json with new package
   const updatePackageJson = (packageName, version, type) => {
-    const packageJsonFile = files.find((f) => f.name === "package.json")
+    const packageJsonFile = files.find((f) => f.name === "package.json");
 
     if (!packageJsonFile) {
-      addConsoleLog("package.json not found", "error")
-      return
+      addConsoleLog("package.json not found", "error");
+      return;
     }
 
     try {
-      const packageJson = JSON.parse(packageJsonFile.content)
+      const packageJson = JSON.parse(packageJsonFile.content);
 
       if (type === "dependency") {
-        packageJson.dependencies = packageJson.dependencies || {}
-        packageJson.dependencies[packageName] = `^${version}`
+        packageJson.dependencies = packageJson.dependencies || {};
+        packageJson.dependencies[packageName] = `^${version}`;
       } else {
-        packageJson.devDependencies = packageJson.devDependencies || {}
-        packageJson.devDependencies[packageName] = `^${version}`
+        packageJson.devDependencies = packageJson.devDependencies || {};
+        packageJson.devDependencies[packageName] = `^${version}`;
       }
 
-      // Format the JSON with proper indentation for better readability
-      const formattedJson = JSON.stringify(packageJson, null, 2)
-      updateFileContent(packageJsonFile.id, formattedJson)
+      const formattedJson = JSON.stringify(packageJson, null, 2);
+      updateFileContent(packageJsonFile.id, formattedJson);
 
-      // Log success message
-      addConsoleLog(`Updated package.json with ${packageName}@${version}`, "success")
+      addConsoleLog(`Updated package.json with ${packageName}@${version}`, "success");
     } catch (error) {
-      addConsoleLog(`Failed to update package.json: ${error.message}`, "error")
+      addConsoleLog(`Failed to update package.json: ${error.message}`, "error");
     }
-  }
+  };
 
-  /**
-   * Uninstall a package
-   */
+  // Uninstall a package
   const uninstallPackage = (packageName) => {
-    setIsInstallingPackage(true)
+    setIsInstallingPackage(true);
 
-    // Simulate package uninstallation
     setTimeout(() => {
       try {
-        // Remove package from state
-        setPackages((prev) => prev.filter((p) => p.name !== packageName))
+        const packageExists = packages.some(p => p.name === packageName);
+        
+        if (!packageExists) {
+          addConsoleLog(`Package ${packageName} is not installed`, "warning");
+          setIsInstallingPackage(false);
+          return;
+        }
+        
+        setPackages((prev) => prev.filter((p) => p.name !== packageName));
 
-        // Update package.json
-        const packageJsonFile = files.find((f) => f.name === "package.json")
+        const packageJsonFile = files.find((f) => f.name === "package.json");
 
         if (packageJsonFile) {
-          const packageJson = JSON.parse(packageJsonFile.content)
+          const packageJson = JSON.parse(packageJsonFile.content);
 
           if (packageJson.dependencies && packageJson.dependencies[packageName]) {
-            delete packageJson.dependencies[packageName]
+            delete packageJson.dependencies[packageName];
           }
 
           if (packageJson.devDependencies && packageJson.devDependencies[packageName]) {
-            delete packageJson.devDependencies[packageName]
+            delete packageJson.devDependencies[packageName];
           }
 
-          updateFileContent(packageJsonFile.id, JSON.stringify(packageJson, null, 2))
+          updateFileContent(packageJsonFile.id, JSON.stringify(packageJson, null, 2));
         }
 
-        addConsoleLog(`Uninstalled ${packageName}`, "success")
+        addConsoleLog(`Uninstalled ${packageName}`, "success");
+        
+        // If auto-refresh is enabled, update the preview
+        if (isAutoRefresh) {
+          setTimeout(() => {
+            updatePreview();
+          }, 500);
+        }
       } catch (error) {
-        addConsoleLog(`Failed to uninstall ${packageName}: ${error.message}`, "error")
+        addConsoleLog(`Failed to uninstall ${packageName}: ${error.message}`, "error");
       } finally {
-        setIsInstallingPackage(false)
+        setIsInstallingPackage(false);
       }
-    }, 1000)
+    }, 1000);
+  };
+
+  // Update preview iframe
+  const updatePreview = useCallback(async () => {
+    try {
+      setIsProcessing(true);
+      setPreviewError(null);
+      setRuntimeErrors([]);
+
+      const htmlFile = files.find((f) => f.name.endsWith(".html"));
+      const htmlContent = htmlFile?.content || DEFAULT_TEMPLATES.html;
+
+      const cssFiles = files.filter((f) => f.name.endsWith(".css"));
+      const cssContent = cssFiles.map((f) => f.content).join("\n");
+
+      const jsFiles = files.filter((f) => f.name.endsWith(".js"));
+      const jsxFiles = files.filter((f) => f.name.endsWith(".jsx"));
+
+      // Ensure jsContent is defined inside the function
+      const jsContent = jsFiles.map((f) => f.content).join("\n");
+
+      let jsxContent = "";
+      if (jsxFiles.length > 0) {
+        for (const file of jsxFiles) {
+          try {
+            const transpiled = Babel.transform(file.content, {
+              presets: ["react"],
+              filename: file.name,
+            }).code;
+
+            jsxContent += `
+// File: ${file.name}
+${transpiled}
+`;
+          } catch (error) {
+            setPreviewError(`Error transpiling ${file.name}: ${error.message}`);
+            addConsoleLog(`JSX Transpilation Error: ${error.message}`, "error");
+            setIsProcessing(false);
+            return;
+          }
+        }
+      }
+
+      // Create a sandbox iframe to prevent access to parent window
+      const sandboxHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground Preview</title>
+  <style>
+    /* Reset styles to prevent leakage from parent */
+    html, body { margin: 0; padding: 0; }
+    
+    /* Injected CSS */
+    ${cssContent}
+  </style>
+</head>
+<body>
+  <!-- Base HTML -->
+  ${htmlContent.replace(/<html[^>]*>|<\/html>|<head[^>]*>|<\/head>|<body[^>]*>|<\/body>/gi, '')}
+
+  <!-- Console interceptor -->
+  <script>
+  (function() {
+      const originalConsole = {
+          log: console.log,
+          error: console.error,
+          warn: console.warn,
+          info: console.info
+      };
+      
+      function sendMessageToParent(type, args, errorDetails) {
+          window.parent.postMessage({
+              source: 'playground-console',
+              type: type,
+              args: Array.from(args).map(arg => 
+                  typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+              ).join(' '),
+              errorDetails
+          }, '*');
+      }
+      
+      console.log = function() {
+          sendMessageToParent('log', arguments);
+          originalConsole.log.apply(console, arguments);
+      };
+      
+      console.error = function() {
+          sendMessageToParent('error', arguments);
+          originalConsole.error.apply(console, arguments);
+      };
+      
+      console.warn = function() {
+          sendMessageToParent('warning', arguments);
+          originalConsole.warn.apply(console, arguments);
+      };
+      
+      console.info = function() {
+          sendMessageToParent('info', arguments);
+          originalConsole.info.apply(console, arguments);
+      };
+      
+      window.onerror = function(message, filename, lineno, colno, error) {
+          sendMessageToParent('error', [message + ' (Line: ' + lineno + ', Col: ' + colno + ')'], {
+              message,
+              filename,
+              lineno,
+              colno,
+              stack: error ? error.stack : null
+          });
+          return true;
+      };
+  })();
+  </script>
+
+  <!-- Inject React if JSX is used -->
+  ${jsxFiles.length > 0 ? `
+  <script src="${CDN_LINKS.react}" crossorigin></script>
+  <script src="${CDN_LINKS.reactDom}" crossorigin></script>
+  <script>
+  function checkReactLoaded() {
+      if (window.React && window.ReactDOM) {
+          initializeApp();
+      } else {
+          setTimeout(checkReactLoaded, 50);
+      }
   }
+  checkReactLoaded();
+  </script>
+  ` : ''}
 
-  // =========================================================================
-  // PREVIEW AND RENDERING
-  // =========================================================================
+  <!-- JavaScript execution -->
+  <script>
+  function initializeApp() {
+      try {
+          // Execute regular JavaScript
+          ${jsContent}
+          
+          // Execute transpiled JSX
+          ${jsxContent}
+      } catch (error) {
+          console.error('Runtime error:', error.message);
+      }
+  }
+  
+  // Initialize immediately if no JSX files exist
+  if (${jsxFiles.length === 0}) {
+      initializeApp();
+  }
+  </script>
+</body>
+</html>`;
 
-  /**
-   * Format code based on file type
-   * This is a placeholder for actual code formatting
-   */
+      if (iframeRef.current) {
+        // Set sandbox attributes to prevent access to parent window
+        iframeRef.current.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin');
+        iframeRef.current.srcdoc = sandboxHtml;
+      }
+
+      addConsoleLog("Preview updated successfully", "success");
+    } catch (error) {
+      setPreviewError(error.message);
+      addConsoleLog(`Preview error: ${error.message}`, "error");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [files]);
+
+  // Format code using Monaco's built-in formatter
   const formatCode = () => {
-    if (!activeFile) return
+    if (!activeFile || !editorRef.current) return;
 
     try {
-      // This is a placeholder for actual code formatting
-      // In a real implementation, you would use a library like prettier
-      addConsoleLog("Formatting code...", "info")
-
-      // Simulate formatting delay
-      setTimeout(() => {
-        addConsoleLog("Code formatted successfully", "success")
-      }, 500)
+      addConsoleLog("Formatting code...", "info");
+      
+      // Use Monaco's built-in formatter
+      editorRef.current.getAction('editor.action.formatDocument').run();
+      
+      addConsoleLog("Code formatted successfully", "success");
     } catch (error) {
-      addConsoleLog(`Format error: ${error.message}`, "error")
+      addConsoleLog(`Format error: ${error.message}`, "error");
     }
-  }
+  };
 
-  /**
-   * Share playground by generating a shareable URL
-   */
+  // Share playground by generating a shareable URL
   const sharePlayground = async () => {
     try {
       const playgroundState = {
         files,
         settings,
         layout: editorLayout,
-      }
+      };
 
       // Here you would typically make an API call to save the state
       // and generate a shareable URL
-      const encodedState = btoa(JSON.stringify(playgroundState))
-      const shareableUrl = `${window.location.origin}/playground/${encodedState}`
+      const encodedState = btoa(JSON.stringify(playgroundState));
+      const shareableUrl = `${window.location.origin}/playground/${encodedState}`;
 
-      setShareUrl(shareableUrl)
-      await navigator.clipboard.writeText(shareableUrl)
-      addConsoleLog("Share URL copied to clipboard!", "success")
+      setShareUrl(shareableUrl);
+      await navigator.clipboard.writeText(shareableUrl);
+      addConsoleLog("Share URL copied to clipboard!", "success");
     } catch (error) {
-      addConsoleLog(`Failed to generate share URL: ${error.message}`, "error")
+      addConsoleLog(`Failed to generate share URL: ${error.message}`, "error");
     }
-  }
+  };
 
-  /**
-   * Download project as a ZIP file
-   */
+  // Download project as a ZIP file
   const downloadProject = () => {
     try {
-      const zip = new JSZip()
+      const zip = new JSZip();
 
       // Add files to the zip
       files.forEach((file) => {
         // Skip folders
-        if (file.type === "folder") return
+        if (file.type === "folder") return;
 
-        const filePath = file.path === "/" ? file.name : `${file.path}/${file.name}`
-        zip.file(filePath, file.content)
-      })
+        const filePath = file.path === "/" ? file.name : `${file.path}/${file.name}`;
+        zip.file(filePath, file.content);
+      });
 
       // Generate and download the zip file
       zip.generateAsync({ type: "blob" }).then((content) => {
-        const url = window.URL.createObjectURL(content)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = "playground-project.zip"
-        a.click()
-        window.URL.revokeObjectURL(url)
+        const url = window.URL.createObjectURL(content);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "playground-project.zip";
+        a.click();
+        window.URL.revokeObjectURL(url);
 
-        addConsoleLog("Project downloaded successfully", "success")
-      })
+        addConsoleLog("Project downloaded successfully", "success");
+      });
     } catch (error) {
-      addConsoleLog(`Failed to download project: ${error.message}`, "error")
+      addConsoleLog(`Failed to download project: ${error.message}`, "error");
     }
-  }
+  };
 
-  /**
-   * Toggle editor layout between horizontal and vertical
-   */
+  // Toggle editor layout between horizontal and vertical
   const toggleEditorLayout = () => {
-    setEditorLayout((prev) => (prev === "horizontal" ? "vertical" : "horizontal"))
-  }
+    setEditorLayout((prev) => (prev === "horizontal" ? "vertical" : "horizontal"));
+  };
 
-  // =========================================================================
-  // RENDER FUNCTIONS
-  // =========================================================================
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
 
-  /**
-   * Render file tree
-   */
+    // If switching to preview, update the preview
+    if (tab === "preview") {
+      updatePreview();
+    }
+  };
+
+  // Add console log with timestamp
+  const addConsoleLog = (message, type = "log") => {
+    setConsoleOutput((prev) => [
+      ...prev,
+      {
+        type,
+        message,
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    ]);
+  };
+
+  // Clear the console
+  const clearConsole = () => {
+    setConsoleOutput([]);
+    setRuntimeErrors([]);
+    addConsoleLog("Console cleared", "info");
+  };
+
+  // Toggle auto-save setting
+  const toggleAutoSave = () => {
+    setSettings(prev => ({
+      ...prev,
+      autoSave: !prev.autoSave
+    }));
+    addConsoleLog(`Auto-save ${!settings.autoSave ? 'enabled' : 'disabled'}`, "info");
+  };
+
+  // Render file tree with drag and drop support
   const renderFileTree = () => {
-    return files.map((file) => {
-      if (file.type === "folder") {
-        const isExpanded = expandedFolders[file.id]
+    const handleDragStart = (event, fileId) => {
+      event.dataTransfer.setData("fileId", fileId);
+    };
 
-        return (
-          <div key={file.id} className={styles.fileTreeItem}>
-            <div className={styles.fileTreeItemHeader} onClick={() => toggleFolder(file.id)}>
-              <span className={styles.fileTreeItemIcon}>
-                {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </span>
-              <span className={styles.fileTreeItemIcon}>
-                <Folder size={16} />
-              </span>
-              <span className={styles.fileTreeItemName}>{file.name}</span>
-            </div>
+    const handleDragOver = (event) => {
+      event.preventDefault();
+    };
 
-            {isExpanded && file.children && (
-              <div className={styles.fileTreeChildren}>
-                {file.children.map((childFile) => (
-                  <div
-                    key={childFile.id}
-                    className={`${styles.fileItem} ${activeFile?.id === childFile.id ? styles.active : ""}`}
-                    onClick={() => setActiveFile(childFile)}
-                  >
-                    <div className={styles.fileItemContent}>
-                      {getFileIcon(childFile.type)}
-                      <span className={styles.fileName}>{childFile.name}</span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteFile(childFile.id)
-                      }}
-                      className={styles.fileDeleteButton}
-                      title="Delete file"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      } else {
-        return (
-          <div key={file.id} className={`${styles.fileItem} ${activeFile?.id === file.id ? styles.active : ""}`}>
-            <div className={styles.fileItemContent} onClick={() => setActiveFile(file)}>
-              {getFileIcon(file.type)}
-              <span className={styles.fileName}>{file.name}</span>
-            </div>
-            <button onClick={() => deleteFile(file.id)} className={styles.fileDeleteButton} title="Delete file">
-              <Trash2 size={14} />
-            </button>
-          </div>
-        )
+    const handleDrop = (event, targetId) => {
+      event.preventDefault();
+      const fileId = event.dataTransfer.getData("fileId");
+      
+      // If dropped on a folder, move the file into that folder
+      if (targetId && fileId) {
+        const targetFile = files.find(f => f.id === parseInt(targetId));
+        const sourceFile = files.find(f => f.id === parseInt(fileId));
+        
+        if (targetFile && sourceFile && targetFile.type === 'folder') {
+          setFiles(prev => prev.map(f => {
+            if (f.id === parseInt(fileId)) {
+              return { ...f, path: `/${targetFile.name}` };
+            }
+            return f;
+          }));
+          
+          addConsoleLog(`Moved ${sourceFile.name} to ${targetFile.name}`, "info");
+        }
       }
-    })
-  }
+    };
 
-  /**
-   * Render package installer
-   */
+    return (
+      <>
+        {files.map((file) => {
+          if (file.type === "folder") {
+            const isExpanded = expandedFolders[file.id];
+
+            return (
+              <div 
+                key={file.id} 
+                className={styles.fileTreeItem}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, file.id)}
+              >
+                <div 
+                  className={styles.fileTreeItemHeader} 
+                  onClick={() => toggleFolder(file.id)}
+                  onContextMenu={(e) => handleContextMenu(e, file.id)}
+                >
+                  <span className={styles.fileTreeItemIcon}>
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </span>
+                  <span className={styles.fileTreeItemIcon}>
+                    <Folder size={16} />
+                  </span>
+                  <span className={styles.fileTreeItemName}>{file.name}</span>
+                </div>
+
+                {isExpanded &&
+                  file.children &&
+                  file.children.map((childFile) => (
+                    <div
+                      key={childFile.id}
+                      className={`${styles.fileItem} ${activeFile?.id === childFile.id ? styles.active : ""}`}
+                      onClick={() => setActiveFile(childFile)}
+                      draggable="true"
+                      onDragStart={(e) => handleDragStart(e, childFile.id)}
+                      onContextMenu={(e) => handleContextMenu(e, childFile.id)}
+                    >
+                      <div className={styles.fileItemContent}>
+                        {getFileIcon(childFile.type)}
+                        <span className={styles.fileName}>{childFile.name}</span>
+                      </div>
+                      <button
+                        onClick={() => deleteFile(childFile.id)}
+                        className={styles.fileDeleteButton}
+                        title="Delete file"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            );
+          } else {
+            return (
+              <div
+                key={file.id}
+                className={`${styles.fileItem} ${activeFile?.id === file.id ? styles.active : ""}`}
+                draggable="true"
+                onDragStart={(e) => handleDragStart(e, file.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, file.id)}
+                onContextMenu={(e) => handleContextMenu(e, file.id)}
+              >
+                <div className={styles.fileItemContent} onClick={() => setActiveFile(file)}>
+                  {getFileIcon(file.type)}
+                  <span className={styles.fileName}>{file.name}</span>
+                  {file.id.toString().startsWith('local_') && (
+                    <span className={styles.unsavedBadge} title="Unsaved file">•</span>
+                  )}
+                </div>
+                <button onClick={() => deleteFile(file.id)} className={styles.fileDeleteButton} title="Delete file">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            );
+          }
+        })}
+        
+        {/* Context Menu */}
+        {contextMenu.visible && (
+          <div 
+            className={styles.contextMenu} 
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <div className={styles.contextMenuItem} onClick={() => handleContextMenuAction('rename')}>
+              Rename
+            </div>
+            <div className={styles.contextMenuItem} onClick={() => handleContextMenuAction('delete')}>
+              Delete
+            </div>
+            <div className={styles.contextMenuItem} onClick={() => handleContextMenuAction('duplicate')}>
+              Duplicate
+            </div>
+            <div className={styles.contextMenuItem} onClick={() => handleContextMenuAction('save')}>
+              Save
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  // Render package installer with enhanced search functionality
   const renderPackageInstaller = () => {
     return (
       <div className={styles.packageInstallerContainer}>
@@ -1489,11 +1504,79 @@ help - Show this help`
             type="text"
             value={packageSearch}
             onChange={(e) => setPackageSearch(e.target.value)}
-            placeholder="Search packages..."
+            placeholder="Search npm packages..."
             className={styles.packageSearchInput}
           />
         </div>
 
+        {/* Search Results */}
+        {packageSearch.trim().length >= 2 && (
+          <div className={styles.searchResults}>
+            <h3 className={styles.packageSectionTitle}>
+              Search Results {isSearching && <RefreshCw size={14} className={styles.spinning} />}
+            </h3>
+            
+            {searchResults.length === 0 ? (
+              isSearching ? (
+                <div className={styles.emptyState}>Searching...</div>
+              ) : (
+                <div className={styles.emptyState}>No packages found</div>
+              )
+            ) : (
+              <div className={styles.packageList}>
+                {searchResults.map((pkg) => (
+                  <div key={pkg.name} className={styles.packageItem}>
+                    <div className={styles.packageInfo}>
+                      <div className={styles.packageHeader}>
+                        <span className={styles.packageName}>{pkg.name}</span>
+                        <span className={styles.packageVersion}>{pkg.version}</span>
+                        {pkg.links?.npm && (
+                          <a 
+                            href={pkg.links.npm} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className={styles.packageLink}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink size={12} />
+                          </a>
+                        )}
+                      </div>
+                      <p className={styles.packageDescription}>{pkg.description}</p>
+                      {pkg.keywords && pkg.keywords.length > 0 && (
+                        <div className={styles.packageTags}>
+                          {pkg.keywords.slice(0, 3).map(keyword => (
+                            <span key={keyword} className={styles.packageTag}>{keyword}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.packageActions}>
+                      <button
+                        onClick={() => installPackage(pkg.name, pkg.version, "dependency")}
+                        className={styles.packageInstallButton}
+                        disabled={isInstallingPackage}
+                      >
+                        {isInstallingPackage ? <RefreshCw size={14} className={styles.spinning} /> : <Plus size={14} />}
+                        Install
+                      </button>
+                      <button
+                        onClick={() => installPackage(pkg.name, pkg.version, "devDependency")}
+                        className={styles.packageDevInstallButton}
+                        disabled={isInstallingPackage}
+                        title="Install as dev dependency"
+                      >
+                        Dev
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Popular Packages */}
         <div className={styles.popularPackages}>
           <h3 className={styles.packageSectionTitle}>Popular Packages</h3>
           <div className={styles.packageList}>
@@ -1511,19 +1594,30 @@ help - Show this help`
                   </div>
                   <p className={styles.packageDescription}>{pkg.description}</p>
                 </div>
-                <button
-                  onClick={() => installPackage(pkg.name, pkg.version)}
-                  className={styles.packageInstallButton}
-                  disabled={isInstallingPackage}
-                >
-                  {isInstallingPackage ? <RefreshCw size={14} className={styles.spinning} /> : <Plus size={14} />}
-                  Install
-                </button>
+                <div className={styles.packageActions}>
+                  <button
+                    onClick={() => installPackage(pkg.name, pkg.version)}
+                    className={styles.packageInstallButton}
+                    disabled={isInstallingPackage}
+                  >
+                    {isInstallingPackage ? <RefreshCw size={14} className={styles.spinning} /> : <Plus size={14} />}
+                    Install
+                  </button>
+                  <button
+                    onClick={() => installPackage(pkg.name, pkg.version, "devDependency")}
+                    className={styles.packageDevInstallButton}
+                    disabled={isInstallingPackage}
+                    title="Install as dev dependency"
+                  >
+                    Dev
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Installed Packages */}
         <div className={styles.installedPackages}>
           <h3 className={styles.packageSectionTitle}>Installed Packages</h3>
           {packages.length === 0 ? (
@@ -1555,12 +1649,10 @@ help - Show this help`
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
-  /**
-   * Render terminal
-   */
+  // Render terminal
   const renderTerminal = () => {
     return (
       <div className={styles.terminalContainer}>
@@ -1597,14 +1689,12 @@ help - Show this help`
           />
         </form>
       </div>
-    )
-  }
+    );
+  };
 
-  /**
-   * Render error panel with detailed error information
-   */
+  // Render error panel with detailed error information
   const renderErrorPanel = () => {
-    const allErrors = [...syntaxErrors, ...runtimeErrors]
+    const allErrors = [...syntaxErrors, ...runtimeErrors];
 
     if (allErrors.length === 0) {
       return (
@@ -1612,7 +1702,7 @@ help - Show this help`
           <Info size={24} />
           <p>No errors to display</p>
         </div>
-      )
+      );
     }
 
     return (
@@ -1623,13 +1713,20 @@ help - Show this help`
             className={styles.errorItem}
             onClick={() => {
               // Find the file and set it as active
-              const file = files.find((f) => f.name === error.source || f.path + "/" + f.name === error.filename)
+              const file = files.find((f) => f.name === error.source || f.path + "/" + f.name === error.filename);
               if (file) {
-                setActiveFile(file)
-                setActiveTab("editor")
-
-                // Scroll to error line (would need to be implemented)
-                // scrollToLine(error.line);
+                setActiveFile(file);
+                setActiveTab("editor");
+                
+                // Jump to error line in Monaco editor
+                if (editorRef.current) {
+                  editorRef.current.revealLineInCenter(error.line);
+                  editorRef.current.setPosition({
+                    lineNumber: error.line,
+                    column: error.column || 1
+                  });
+                  editorRef.current.focus();
+                }
               }
             }}
           >
@@ -1644,12 +1741,8 @@ help - Show this help`
           </div>
         ))}
       </div>
-    )
-  }
-
-  // =========================================================================
-  // MAIN RENDER
-  // =========================================================================
+    );
+  };
 
   return (
     <div className={`${styles.playgroundContainer} ${styles[theme]}`}>
@@ -1658,7 +1751,7 @@ help - Show this help`
         <div className={styles.headerLeft}>
           <h1 className={styles.playgroundTitle}>Playground</h1>
           <div className={styles.headerTabs}>
-            <a href="/" className={`${styles.tabButton}`} style={{ textDecoration: "none" }}>
+            <a href="/" className={styles.tabButton} style={{ textDecoration: "none" }}>
               <Home size={16} /> {/* Home Icon */}
               <span className="font-semibold">Home</span>
             </a>
@@ -1679,6 +1772,22 @@ help - Show this help`
           </div>
         </div>
         <div className={styles.headerActions}>
+          <button 
+            onClick={saveCurrentFile} 
+            className={`${styles.iconButton} ${isSaving ? styles.processing : ""} ${saveStatus ? styles[saveStatus] : ""}`} 
+            title="Save current file (Ctrl+S)"
+            disabled={isSaving || !activeFile}
+          >
+            <Save size={16} />
+          </button>
+          <button 
+            onClick={saveAllFiles} 
+            className={`${styles.iconButton} ${isSaving ? styles.processing : ""}`} 
+            title="Save all files"
+            disabled={isSaving || files.length === 0}
+          >
+            <Database size={16} />
+          </button>
           <button onClick={sharePlayground} className={styles.iconButton} title="Share Playground">
             <Share size={16} />
           </button>
@@ -1703,7 +1812,7 @@ help - Show this help`
       </div>
 
       {/* Main Content */}
-      <div className={`${styles.mainContent} ${styles[editorLayout]}`}>
+      <div className={`${styles.mainContent} ${editorLayout}`}>
         {/* Sidebar */}
         {isSidebarOpen && (
           <div className={styles.sidebar}>
@@ -1749,6 +1858,14 @@ help - Show this help`
                         <Folder size={16} />
                       </button>
                       <button
+                        onClick={() => loadUserFiles()}
+                        className={`${styles.iconButton} ${isLoading ? styles.processing : ""}`}
+                        title="Reload files from server"
+                        disabled={isLoading}
+                      >
+                        <Upload size={16} />
+                      </button>
+                      <button
                         onClick={() => setIsSidebarOpen(false)}
                         className={styles.iconButton}
                         title="Close sidebar"
@@ -1778,7 +1895,6 @@ help - Show this help`
                         <option value="css">CSS</option>
                         <option value="javascript">JavaScript</option>
                         <option value="jsx">JSX</option>
-                        <option value="tsx">TSX</option>
                         <option value="json">JSON</option>
                       </select>
                       <div className={styles.newFileActions}>
@@ -1824,8 +1940,23 @@ help - Show this help`
                   {syntaxErrors.length}
                 </span>
               )}
+              
+              {/* Show unsaved indicator */}
+              {activeFile && activeFile.id.toString().startsWith('local_') && (
+                <span className={styles.unsavedIndicator} title="Unsaved file">
+                  Unsaved
+                </span>
+              )}
             </div>
             <div className={styles.editorActions}>
+              <button 
+                onClick={toggleAutoSave} 
+                className={`${styles.iconButton} ${settings.autoSave ? styles.active : ""}`} 
+                title={settings.autoSave ? "Disable auto-save" : "Enable auto-save"}
+              >
+                <Save size={16} />
+                <span className={styles.actionLabel}>Auto</span>
+              </button>
               <button onClick={formatCode} className={styles.iconButton} title="Format code">
                 <Code size={16} />
               </button>
@@ -1839,58 +1970,40 @@ help - Show this help`
             </div>
           </div>
 
-          {/* Code Editor */}
-          <div
-            className={`${styles.codeEditor} ${showLineNumbers ? styles.hasLineNumbers : ""}`}
-            ref={editorWrapperRef}
-          >
-            {/* Optimize the line numbers rendering */}
-            {showLineNumbers && activeFile && (
-              <div className={styles.lineNumbers} ref={lineNumbersRef}>
-                {activeFile.content.split("\n").map((_, i) => {
-                  const lineNum = i + 1
-                  const hasError = syntaxErrors.some((err) => err.line === lineNum)
-                  return (
-                    <div
-                      key={i}
-                      className={`${styles.lineNumber} ${hasError ? styles.errorLine : ""}`}
-                      title={hasError ? syntaxErrors.find((err) => err.line === lineNum)?.message : ""}
-                    >
-                      {hasError && <AlertCircle size={12} className={styles.lineErrorIcon} />}
-                      {lineNum}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
+          {/* Monaco Editor */}
+          <div className={styles.monacoEditorContainer}>
             {activeFile ? (
-              <div className={styles.editorWithHighlight}>
-                {/* Syntax highlighted code (read-only, for display) */}
-                <pre className={styles.highlightedCode} ref={highlightedCodeRef} aria-hidden="true"></pre>
-
-                {/* Actual textarea for editing */}
-                <textarea
-                  ref={editorRef}
-                  value={activeFile.content || ""}
-                  onChange={handleEditorChange}
-                  onKeyDown={handleKeyDown}
-                  className={styles.codeContent}
-                  style={{
-                    fontSize: `${settings.fontSize}px`,
-                    tabSize: settings.tabSize,
-                    whiteSpace: settings.wordWrap ? "pre-wrap" : "pre",
-                  }}
-                  spellCheck="false"
-                  autoCapitalize="off"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  data-gramm="false"
-                  data-gramm_editor="false"
-                  data-enable-grammarly="false"
-                  wrap={settings.wordWrap ? "soft" : "off"}
-                />
-              </div>
+              <Editor
+                height="100%"
+                language={getLanguageId(activeFile.type)}
+                value={activeFile.content}
+                onChange={handleEditorChange}
+                onMount={handleEditorDidMount}
+                theme={theme === "dark" ? "vs-dark" : "vs-light"}
+                options={{
+                  fontSize: settings.fontSize,
+                  tabSize: settings.tabSize,
+                  wordWrap: settings.wordWrap ? "on" : "off",
+                  minimap: { enabled: settings.minimap },
+                  renderIndentGuides: settings.indentGuides,
+                  autoClosingBrackets: settings.autoClosingBrackets ? "always" : "never",
+                  renderLineHighlight: settings.highlightActiveLine ? "all" : "none",
+                  lineNumbers: showLineNumbers ? "on" : "off",
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  contextmenu: true,
+                  quickSuggestions: settings.autoComplete,
+                  suggestOnTriggerCharacters: settings.autoComplete,
+                  folding: true,
+                  foldingStrategy: "auto",
+                  matchBrackets: "always",
+                  scrollbar: {
+                    verticalScrollbarSize: 10,
+                    horizontalScrollbarSize: 10,
+                    alwaysConsumeMouseWheel: false
+                  }
+                }}
+              />
             ) : (
               <div className={styles.noFileSelected}>
                 <p>No file selected</p>
@@ -1899,33 +2012,16 @@ help - Show this help`
                 </button>
               </div>
             )}
-
-            {/* Error markers */}
-            {activeFile && syntaxErrors.length > 0 && (
-              <div className={styles.errorMarkers}>
-                {syntaxErrors.map((error, index) => {
-                  const lines = activeFile.content.split("\n")
-                  const lineHeight = 1.7 // Same as in CSS
-                  const top = (error.line - 1) * lineHeight + 0.2 // Adjust for positioning
-
-                  return (
-                    <div key={index} className={styles.errorMarker} style={{ top: `${top}em` }} title={error.message}>
-                      <span className={styles.errorMarkerLine}></span>
-                      <span className={styles.errorMarkerIcon}>
-                        <AlertCircle size={12} />
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
           </div>
         </div>
 
         {/* Preview Section */}
         <div
-          className={`${styles.previewSection} ${isFullScreen ? styles.fullScreen : ""} ${activeTab === "preview" ? styles.visible : styles.hidden}`}
+          className={`${styles.previewSection} ${
+            isFullScreen ? styles.fullScreen : ""
+          } ${activeTab === "preview" ? styles.visible : styles.hidden}`}
         >
+          {/* Preview Header (Visible in Fullscreen Mode) */}
           <div className={styles.previewHeader}>
             <span className={styles.previewTitle}>Preview</span>
             <div className={styles.previewActions}>
@@ -1953,7 +2049,9 @@ help - Show this help`
               </button>
             </div>
           </div>
-          <div className={styles.previewContent}>
+
+          {/* Full-Screen Preview Content */}
+          <div className={`${styles.previewContent} ${isFullScreen ? styles.fullScreenContent : ""}`}>
             {previewError ? (
               <div className={styles.previewError}>
                 <h3>Preview Error</h3>
@@ -1963,8 +2061,8 @@ help - Show this help`
               <iframe
                 ref={iframeRef}
                 title="preview"
-                className={styles.previewFrame}
-                sandbox="allow-scripts allow-modals allow-forms allow-same-origin allow-popups allow-presentation"
+                className={`${styles.previewFrame} ${isFullScreen ? styles.fullScreenFrame : ""}`}
+                sandbox="allow-scripts allow-forms allow-same-origin"
               />
             )}
           </div>
@@ -2063,12 +2161,22 @@ help - Show this help`
                   {syntaxErrors.length} error{syntaxErrors.length !== 1 ? "s" : ""}
                 </span>
               )}
+              {saveStatus === "saved" && (
+                <span className={styles.statusSuccess}>Saved</span>
+              )}
+              {saveStatus === "saving" && (
+                <span className={styles.statusInfo}>Saving...</span>
+              )}
+              {saveStatus === "error" && (
+                <span className={styles.statusError}>Save failed</span>
+              )}
             </>
           )}
         </div>
         <div className={styles.statusRight}>
           <span className={styles.statusItem}>{theme === "light" ? "Light Mode" : "Dark Mode"}</span>
           <span className={styles.statusItem}>{isAutoRefresh ? "Auto-refresh: On" : "Auto-refresh: Off"}</span>
+          <span className={styles.statusItem}>{settings.autoSave ? "Auto-save: On" : "Auto-save: Off"}</span>
           <span className={styles.statusItem}>
             <Coffee size={14} className={styles.statusIcon} />
             Ready
@@ -2076,6 +2184,5 @@ help - Show this help`
         </div>
       </div>
     </div>
-  )
+  );
 }
-
