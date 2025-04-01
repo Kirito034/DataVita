@@ -1,0 +1,88 @@
+/* URL bar styles for the playground */
+.urlBarContainer {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    flex-grow: 1;
+    max-width: 500px;
+  }
+  
+  .urlBar {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #333;
+    width: 100%;
+    overflow: hidden;
+    height: 28px;
+  }
+  
+  .urlBar span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .urlProtocol {
+    color: #888;
+    margin-right: 2px;
+  }
+  
+  .urlHost {
+    color: #555;
+    font-weight: 500;
+  }
+  
+  .urlPath {
+    color: #333;
+  }
+  
+  /* Dark mode styles */
+  :global([data-theme="dark"]).urlBar {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #ddd;
+  }
+  
+  :global([data-theme="dark"]).urlProtocol {
+    color: #aaa;
+  }
+  
+  :global([data-theme="dark"]).urlHost {
+    color: #ccc;
+  }
+  
+  :global([data-theme="dark"]).urlPath {
+    color: #eee;
+  }
+  
+  .refreshButton {
+    margin-left: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    color: #555;
+  }
+  
+  .refreshButton:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  :global([data-theme="dark"]).refreshButton {
+    color: #aaa;
+  }
+  
+  :global([data-theme="dark"]).refreshButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { Editor } from "@monaco-editor/react"
 import ReactDiffViewer from "react-diff-viewer"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-
+import { vs, vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   PlayCircle,
   ChevronUp,
@@ -1031,6 +1031,7 @@ const PythonNotebook = ({ fileTabs = [], openFile, addTab, removeTab, onExecuteC
                     ) : (
                       <SyntaxHighlighter
                         language={cell.status === "Error" ? "bash" : "python"}
+                        style={isDarkMode ? vscDarkPlus : vs}
                         customStyle={{
                           margin: 0,
                           padding: "12px",

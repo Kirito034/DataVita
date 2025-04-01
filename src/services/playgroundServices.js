@@ -17,24 +17,30 @@ const PlaygroundServices = {
   },
 
   saveFile: async (fileData) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/files`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(fileData),
-      })
-      if (!response.ok) {
-        throw new Error(`Failed to save file: ${response.status}`)
-      }
-      return await response.json()
-    } catch (error) {
-      console.error("Error saving file:", error)
-      throw error
-    }
-  },
+      try {
+        const response = await fetch(`${API_BASE_URL}/files`, {
+          method: "POST",
+          headers: {
 
+            
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(fileData),
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to save file: ${response.status}`);
+        }
+  
+        const savedFile = await response.json();
+        return savedFile;
+      } catch (error) {
+        console.error("❌ Error saving file:", error.message);
+        throw error;
+      }
+    },
+    
   updateFile: async (fileId, fileData) => {
     try {
       const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {

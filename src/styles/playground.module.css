@@ -1416,3 +1416,169 @@
   width: 100% !important;
   height: 100% !important;
 }
+
+/* Editor Tabs */
+.editorTabs {
+  display: flex;
+  overflow-x: auto;
+  background-color: hsl(var(--muted));
+  border-bottom: 1px solid hsl(var(--border));
+  height: 36px;
+  padding-left: 0.5rem;
+}
+
+.editorTab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  height: 100%;
+  min-width: 120px;
+  max-width: 200px;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  border-right: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.editorTab.active {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border-top: 2px solid hsl(var(--accent));
+}
+
+.editorTabContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  flex: 1;
+}
+
+.editorTabName {
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editorTabClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 0.25rem;
+}
+
+.editorTabClose:hover {
+  background-color: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
+}
+
+/* File Tree Enhancements */
+.fileTreeItemHeader.selected {
+  background-color: hsl(var(--accent) / 0.2);
+  color: hsl(var(--accent));
+}
+
+.unsavedBadge {
+  color: hsl(var(--warning));
+  font-size: 1.25rem;
+  line-height: 1;
+  margin-left: 0.25rem;
+}
+
+/* Context Menu Enhancements */
+.contextMenu {
+  z-index: 1000;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.contextMenuItem {
+  font-size: 0.8125rem;
+}
+
+.previewNavigation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  padding: 10px 15px;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.previewNavigationLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.previewNavigationSelect {
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: var(--radius);
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.previewNavigationSelect:hover {
+  border-color: hsl(var(--accent));
+}
+
+.previewNavigationSelect:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 5px hsl(var(--ring));
+}
+
+.previewNavigationSelect option {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+}
+
+/* Dark Mode */
+[data-theme="dark"] .previewNavigation {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+[data-theme="dark"] .previewNavigationLabel {
+  color: hsl(var(--muted-foreground));
+}
+
+[data-theme="dark"] .previewNavigationSelect {
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+[data-theme="dark"] .previewNavigationSelect:hover {
+  border-color: hsl(var(--accent));
+}
+
+[data-theme="dark"] .previewNavigationSelect:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 5px hsl(var(--ring));
+}
+
+[data-theme="dark"] .previewNavigationSelect option {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+}

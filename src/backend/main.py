@@ -731,9 +731,22 @@ def save_file():
         return jsonify({"message": "File saved successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:amanossan1@localhost/compiler_db'  # Replace with your DB credentials
-db = SQLAlchemy(app)
-db.init_app(app)
+# ✅ Configure PostgreSQL with optimized connection pool settings
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:amanossan1@localhost/compiler_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable unnecessary tracking
+
+# ✅ Pool settings to handle high concurrency
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_size": 50,
+    "max_overflow": 20,
+    "pool_timeout": 30,
+    "pool_recycle": 1800,
+    "pool_pre_ping": True
+}
+
+
+db = SQLAlchemy()  
+db.init_app(app)  
 # Define the VersionHistory model
 class User(db.Model):
     __tablename__ = "users"

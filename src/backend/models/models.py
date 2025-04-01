@@ -1,68 +1,79 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.event import listens_for
 import uuid
 
 # Initialize SQLAlchemy
 db = SQLAlchemy()
 
+# User Model
 class User(db.Model):
-    """User table storing user details."""
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)  # Auto-incremented user ID
+    id = Column(Integer, primary_key=True)  
     full_name = Column(String(255), nullable=False)
 
-    # Relationship with FileMetadata
+    # Relationships
     owned_files = relationship("FileMetadata", foreign_keys="FileMetadata.created_by", back_populates="owner")
     modified_files = relationship("FileMetadata", foreign_keys="FileMetadata.last_modified_by", back_populates="modifier")
 
+# File Metadata Model
 class FileMetadata(db.Model):
-    """Table to store all files & folders metadata."""
     __tablename__ = "file_metadata"
 
-    id = Column(Integer, primary_key=True)  # Unique file ID
-    name = Column(String(255), nullable=False)  # File/Folder name
-    path = Column(String(500), nullable=False, unique=True)  # Full path
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    path = Column(String(500), nullable=False, unique=True)
     type = Column(String(50), nullable=False)  # "file" or "folder"
-    extension = Column(String(20), nullable=True)  # File extension
+    extension = Column(String(20), nullable=True)
 
-    created_at = Column(DateTime, nullable=False)
-    created_by = Column(Integer, ForeignKey('users.id'), nullable=False)  # User ID (creator)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_by = Column(Integer, ForeignKey('users.id'), nullable=False)
     last_modified_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    last_modified_by = Column(Integer, ForeignKey('users.id'), nullable=False)  # User ID (last modifier)
+    last_modified_by = Column(Integer, ForeignKey('users.id'), nullable=False)
 
-    # Relationships
-    owner = relationship("User", foreign_keys=[created_by], back_populates="owned_files")
-    modifier = relationship("User", foreign_keys=[last_modified_by], back_populates="modified_files")
+    # Optimized Relationships
+    owner = relationship("User", foreign_keys=[created_by], back_populates="owned_files", lazy="joined")
+    modifier = relationship("User", foreign_keys=[last_modified_by], back_populates="modified_files", lazy="joined")
 
+# Version History Model
 class VersionHistory(db.Model):
-    """Table to track version history of files."""
     __tablename__ = "version_history"
 
     id = Column(Integer, primary_key=True)
-    file_path = Column(String(500), nullable=False)  # Path of the file
-    timestamp = Column(DateTime, default=datetime.utcnow)  # When was this version created?
-    content = Column(String, nullable=False)  # File content snapshot
-    commit_message = Column(String, nullable=True)  # Commit message
-    diff = Column(String, nullable=True)  # Changes (diff)
+    file_path = Column(String(500), nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    content = Column(Text, nullable=False)  # Store large content efficiently
+    commit_message = Column(String, nullable=True)
+    diff = Column(Text, nullable=True)
 
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # User who made the change
-    user = relationship("User", backref="versions", lazy=True)  # Relationship to User
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    user = relationship("User", backref=backref("versions", lazy="joined"))
 
-
+# Playground File Model
 class PlaygroundFile(db.Model):
     __tablename__ = "playground_files"
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = db.Column(Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)  # Ensure consistency
-    file_name = db.Column(db.String(255), nullable=False)
-    file_extension = db.Column(db.String(10), nullable=False)
-    file_content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)  
+    file_name = Column(String(255), nullable=False)
+    file_extension = Column(String(10), nullable=False)
+    file_content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    file_path = Column(String, nullable=True)
 
-    # Relationship to fetch user details (Optimized with lazy="joined")
-    user = relationship("User", backref="playground_files", lazy="joined")
+    # Optimized Relationship
+    user = relationship("User", backref=backref("playground_files", lazy="joined"))
+
+    # Store full_name efficiently
+    full_name = Column(String(255), nullable=True)
+
+# Event Listener to Auto-Store Full Name
+@listens_for(PlaygroundFile, 'before_insert')
+def set_full_name(mapper, connection, target):
+    user = db.session.query(User).filter_by(id=target.user_id).first()
+    target.full_name = user.full_name if user else None

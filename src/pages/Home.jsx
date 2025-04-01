@@ -679,8 +679,8 @@ const Home = () => {
                     <div className="datavita-code-editor">
                       <div className="datavita-editor-header">
                         <div className="datavita-editor-tabs">
-                          <div className="datavita-editor-tab datavita-active">main.py</div>
-                          <div className="datavita-editor-tab">data.csv</div>
+                          <div className="datavita-editor-tab datavita-active">app.jsx</div>
+                          <div className="datavita-editor-tab">app.css</div>
                         </div>
                       </div>
                       <div className="datavita-editor-content">

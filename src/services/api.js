@@ -239,8 +239,8 @@ export const fetchFileStructure = async () => {
     console.log("🔹 Fetching file structure...");
 
     // 🔹 Retrieve user details from localStorage
-    const userId = localStorage.getItem("user_id") || "unknown";  // Handle UUID properly
-    const userFullName = localStorage.getItem("user_full_name") || "Unknown User";
+    const userId = localStorage.getItem("user_id") || "unknown";  // ✅ Use ID for filtering
+    const userFullName = localStorage.getItem("user_full_name") || "Unknown User";  // ✅ Use Name for Display
 
     console.log(`🆔 Sending Headers -> X-User-Id: ${userId}, X-User-FullName: ${userFullName}`);
 
@@ -249,8 +249,8 @@ export const fetchFileStructure = async () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-User-Id": userId,  // Keep UUID as string
-        "X-User-FullName": userFullName,
+        "X-User-Id": userId,  // ✅ Use ID for filtering
+        "X-User-FullName": userFullName,  // ✅ Use Name for Display
       },
     });
 
@@ -265,6 +265,7 @@ export const fetchFileStructure = async () => {
     throw error;
   }
 };
+
 
 
 /**
