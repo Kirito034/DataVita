@@ -96,15 +96,26 @@ def set_environment_variables():
     """
     Set the necessary environment variables for Spark and Hadoop.
     """
-    # Hadoop Path
-    hadoop_home = "F:/new_folder_E/compiler_cells_connected/google-colab-clone_with_frontend_good/Datavita/google-colab-clone/src/backend/core/hadoop"
+# Get the absolute path of the script's directory (if not already set)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # Hadoop Path (Relative to Script Location)
+    hadoop_home = os.path.join(BASE_DIR, "hadoop")
+
+    # Check if Hadoop directory exists
     if not os.path.exists(hadoop_home):
         logger.warning(f"Hadoop home directory not found at {hadoop_home}. Some features may not work.")
+
+    # Set Environment Variables
     os.environ["HADOOP_HOME"] = hadoop_home
-    os.environ["PATH"] = f"{hadoop_home}/bin;" + os.environ.get("PATH", "")
+    os.environ["PATH"] = os.path.join(hadoop_home, "bin") + os.pathsep + os.environ.get("PATH", "")
+
+    # Debugging Output (Optional)
+    print("HADOOP_HOME:", os.environ["HADOOP_HOME"])
+    print("PATH:", os.environ["PATH"])
 
     # Java Path
-    java_home = "C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.432.6-hotspot"
+    java_home = "core\\jdk-8.0.432.6-hotspot"
     if not os.path.exists(java_home):
         logger.warning(f"Java home directory not found at {java_home}. Spark may not work.")
     os.environ["JAVA_HOME"] = java_home
@@ -114,12 +125,20 @@ def set_environment_variables():
     os.environ["PYSPARK_PYTHON"] = sys.executable
 
     # Initialize findspark with Spark installation path
-    spark_home = "C:\\Program Files\\spark-3.4.4-bin-hadoop3-scala2.13\\spark-3.4.4-bin-hadoop3-scala2.13"
+    spark_home = "core/spark-3.4.4-bin-hadoop3-scala2.13"
+
+    # Convert to an absolute path (recommended for safety)
+    spark_home = os.path.abspath(spark_home)
+
+    # Check if Spark exists
     if not os.path.exists(spark_home):
         logger.error(f"Spark home directory not found at {spark_home}. Please install Spark.")
         sys.exit(1)
+
     logger.debug(f"Initializing findspark with Spark home: {spark_home}")
-    findspark.init(spark_home)  # Explicitly initialize Spark with the specified path
+
+    # Initialize findspark with the absolute Spark path
+    findspark.init(spark_home)  
     logger.debug("findspark initialized successfully.")
 
 # Determine the correct file system scheme

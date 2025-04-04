@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useCallback, useRef, useState } from "react"
-import { RefreshCw, Play, Maximize2, Minimize2 } from "lucide-react"
+import { RefreshCw, Play, Maximize2, Minimize2, ExternalLink } from "lucide-react"
 import styles from "../../styles/playground.module.css"
 import UrlBar from "./utils/UrlBar"
 
@@ -16,11 +16,11 @@ export default function PreviewPanel({
   currentPreviewPage,
   setCurrentPreviewPage,
   updatePreview,
-  handleSpaRouting,
   iframeRef,
   addConsoleLog,
   setRuntimeErrors,
   CDN_LINKS,
+  projectType,
 }) {
   // Reference to track if the component is mounted
   const isMountedRef = useRef(true)
@@ -29,11 +29,36 @@ export default function PreviewPanel({
   const [isSpaMode, setIsSpaMode] = useState(false)
   const [spaPath, setSpaPath] = useState("/")
 
+  // Add state for preview URL
+  const [previewUrl, setPreviewUrl] = useState("")
+
+  // Add state to track deleted files that are still needed for preview
+  const [deletedFiles, setDeletedFiles] = useState([])
+
   useEffect(() => {
     return () => {
       isMountedRef.current = false
     }
   }, [])
+
+  // Track deleted files that might be needed for preview
+  useEffect(() => {
+    // Check if the current preview page exists in files
+    const currentPageExists = files.some((f) => f.name === currentPreviewPage)
+
+    if (!currentPageExists) {
+      // Find the file in deletedFiles or try to find another HTML file
+      const deletedFile = deletedFiles.find((f) => f.name === currentPreviewPage)
+
+      if (!deletedFile) {
+        // Try to find another HTML file to use
+        const htmlFile = files.find((f) => f.type === "html")
+        if (htmlFile) {
+          setCurrentPreviewPage(htmlFile.name)
+        }
+      }
+    }
+  }, [files, currentPreviewPage, deletedFiles])
 
   // Handle console messages from the preview iframe
   useEffect(() => {
@@ -86,10 +111,51 @@ export default function PreviewPanel({
     return () => window.removeEventListener("message", handleMessage)
   }, [setCurrentPreviewPage, updatePreview, addConsoleLog, setRuntimeErrors])
 
+  // Generate a shareable preview URL
+  const generateShareableUrl = useCallback(() => {
+    // Create a temporary URL that can be shared
+    try {
+      const previewData = {
+        files: files.map((f) => ({
+          name: f.name,
+          type: f.type,
+          content: f.content,
+          path: f.path,
+        })),
+        currentPage: currentPreviewPage,
+      }
+
+      // In a real implementation, this would call an API to save the state
+      // and generate a shareable URL with a unique ID
+      const encodedData = btoa(JSON.stringify(previewData))
+      const shareableUrl = `${window.location.origin}/preview/${encodedData}`
+
+      setPreviewUrl(shareableUrl)
+
+      // Copy to clipboard
+      navigator.clipboard
+        .writeText(shareableUrl)
+        .then(() => {
+          addConsoleLog("Preview URL copied to clipboard!", "success")
+        })
+        .catch((err) => {
+          addConsoleLog(`Failed to copy URL: ${err.message}`, "error")
+        })
+    } catch (error) {
+      addConsoleLog(`Failed to generate preview URL: ${error.message}`, "error")
+    }
+  }, [files, currentPreviewPage, addConsoleLog])
+
   // Render preview navigation bar
   const renderPreviewNavigation = () => {
     // Get all HTML files
     const htmlFiles = files.filter((f) => f.type === "html")
+
+    // Include deleted HTML files that might still be needed
+    const deletedHtmlFiles = deletedFiles.filter((f) => f.type === "html")
+
+    // Combine both lists, ensuring no duplicates
+    const allHtmlFiles = [...htmlFiles, ...deletedHtmlFiles.filter((df) => !htmlFiles.some((f) => f.name === df.name))]
 
     return (
       <div className={styles.previewNavigation}>
@@ -99,9 +165,9 @@ export default function PreviewPanel({
           onChange={(e) => updatePreview(e.target.value)}
           className={styles.previewNavigationSelect}
         >
-          {htmlFiles.map((file) => (
+          {allHtmlFiles.map((file) => (
             <option key={file.id} value={file.name}>
-              {file.name}
+              {file.name} {!files.some((f) => f.id === file.id) && "(deleted)"}
             </option>
           ))}
         </select>
@@ -112,16 +178,20 @@ export default function PreviewPanel({
           isSpa={isSpaMode}
           spaPath={spaPath}
         />
+
+        <button onClick={generateShareableUrl} className={styles.iconButton} title="Generate shareable preview URL">
+          <ExternalLink size={16} />
+        </button>
       </div>
     )
   }
 
   // Build a file path map for resolving imports
-  const buildFilePathMap = useCallback((files) => {
+  const buildFilePathMap = useCallback((allFiles) => {
     const fileMap = {}
 
     // First pass: map all files by their full paths
-    files.forEach((file) => {
+    allFiles.forEach((file) => {
       // Normalize path to ensure consistency
       const normalizedPath = file.path.endsWith("/") ? file.path : `${file.path}/`
       const fullPath = normalizedPath === "/" ? file.name : `${normalizedPath}${file.name}`
@@ -144,11 +214,11 @@ export default function PreviewPanel({
     })
 
     // Second pass: handle relative paths for each file's directory
-    files.forEach((file) => {
+    allFiles.forEach((file) => {
       const normalizedPath = file.path.endsWith("/") ? file.path : `${file.path}/`
 
       // For each directory in the project, add mappings for files relative to that directory
-      files.forEach((targetFile) => {
+      allFiles.forEach((targetFile) => {
         if (targetFile.path !== file.path) {
           // Calculate relative path from file's directory to target file
           const relativePath = calculateRelativePath(normalizedPath, targetFile)
@@ -214,18 +284,21 @@ export default function PreviewPanel({
   // Generate preview content
   const generatePreview = useCallback(() => {
     try {
+      // Combine current files with deleted files that might still be needed
+      const allFiles = [...files, ...deletedFiles.filter((df) => !files.some((f) => f.id === df.id))]
+
       // Find the HTML file that should be the entry point
       // Use the specified page, or index.html as default
-      let htmlFile = files.find((f) => f.name === currentPreviewPage)
+      let htmlFile = allFiles.find((f) => f.name === currentPreviewPage)
       if (!htmlFile) {
-        htmlFile = files.find((f) => f.name === "index.html")
+        htmlFile = allFiles.find((f) => f.name === "index.html")
         if (!htmlFile) {
-          htmlFile = files.find((f) => f.name.endsWith(".html"))
+          htmlFile = allFiles.find((f) => f.name.endsWith(".html"))
         }
       }
 
       // If no HTML file is found, log an error and return
-      if (!htmlFile && files.length > 0) {
+      if (!htmlFile && allFiles.length > 0) {
         addConsoleLog(`No HTML file found for preview`, "error")
         return false
       }
@@ -233,16 +306,16 @@ export default function PreviewPanel({
       const htmlContent = htmlFile?.content || ""
 
       // Get all CSS files
-      const cssFiles = files.filter((f) => f.name.endsWith(".css"))
+      const cssFiles = allFiles.filter((f) => f.name.endsWith(".css"))
 
       // Get all JS files
-      const jsFiles = files.filter((f) => f.name.endsWith(".js"))
+      const jsFiles = allFiles.filter((f) => f.name.endsWith(".js"))
 
       // Get all JSX files
-      const jsxFiles = files.filter((f) => f.name.endsWith(".jsx") || f.name.endsWith(".tsx"))
+      const jsxFiles = allFiles.filter((f) => f.name.endsWith(".jsx") || f.name.endsWith(".tsx"))
 
       // Create a map of all files for import resolution
-      const fileMap = buildFilePathMap(files)
+      const fileMap = buildFilePathMap(allFiles)
 
       // Process imports in JS files to create a dependency graph
       const processedFiles = new Set()
@@ -1055,21 +1128,39 @@ if (window.ReactRouterDOM) {
       addConsoleLog(`Preview error: ${error.message}`, "error")
       return false
     }
-  }, [files, currentPreviewPage, iframeRef, CDN_LINKS, addConsoleLog, isAutoRefresh, buildFilePathMap])
+  }, [files, currentPreviewPage, iframeRef, CDN_LINKS, addConsoleLog, isAutoRefresh, buildFilePathMap, deletedFiles])
 
   // Update preview when component mounts or when files/currentPreviewPage changes
   useEffect(() => {
     // Only generate preview if we have files and a current page
-    if (files.length > 0 && currentPreviewPage) {
+    if ((files.length > 0 || deletedFiles.length > 0) && currentPreviewPage) {
       generatePreview()
     }
     // Do NOT include generatePreview in the dependency array
-  }, [files, currentPreviewPage])
+  }, [files, currentPreviewPage, deletedFiles])
+
+  // Track deleted files that might be needed for preview
+  useEffect(() => {
+    // When a file is removed from the files array, check if it's needed for preview
+    const checkForDeletedFiles = () => {
+      // Find files that were in the previous render but not in the current files array
+      const currentFileIds = new Set(files.map((f) => f.id))
+
+      // Add any newly deleted files to our deletedFiles state
+      const newlyDeletedFiles = files.filter((f) => !currentFileIds.has(f.id))
+
+      if (newlyDeletedFiles.length > 0) {
+        setDeletedFiles((prev) => [...prev, ...newlyDeletedFiles])
+      }
+    }
+
+    checkForDeletedFiles()
+  }, [files])
 
   // Memoize the generatePreview function to prevent it from causing infinite loops
   const memoizedGeneratePreview = useCallback(() => {
     generatePreview()
-  }, [files, currentPreviewPage])
+  }, [files, currentPreviewPage, deletedFiles])
 
   // Handle auto-refresh
   useEffect(() => {
@@ -1136,6 +1227,22 @@ if (window.ReactRouterDOM) {
           />
         )}
       </div>
+
+      {/* Preview URL Display */}
+      {previewUrl && (
+        <div className={styles.previewUrlContainer}>
+          <input
+            type="text"
+            value={previewUrl}
+            readOnly
+            className={styles.previewUrlInput}
+            onClick={(e) => e.target.select()}
+          />
+          <button className={styles.previewUrlButton} onClick={() => window.open(previewUrl, "_blank")}>
+            Open in new tab
+          </button>
+        </div>
+      )}
     </>
   )
 }

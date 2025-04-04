@@ -1,14 +1,38 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Sun, Moon, Download, Share, Settings, FolderPlus, Save, Database, Home, Code, Eye } from "lucide-react"
-import styles from "../styles/playground.module.css"
+import {
+  Sun,
+  Moon,
+  Download,
+  Share,
+  Settings,
+  FolderPlus,
+  Save,
+  Database,
+  Home,
+  Code,
+  Eye,
+  Plus,
+  Folder,
+  Trash2,
+  RefreshCw,
+} from "lucide-react"
+import { v4 as uuidv4 } from "uuid"
 import JSZip from "jszip"
+import styles from "../styles/playground.module.css"
 import Sidebar from "../components/playground/sidebar"
 import EditorPanel from "../components/playground/EditorPanel"
 import PreviewPanel from "../components/playground/PreviewPanel"
 import BottomPanel from "../components/playground/BottomPanel"
 import { DEFAULT_TEMPLATES, PROJECT_TEMPLATES, CDN_LINKS } from "../components/playground/constants"
+import PlaygroundServices from "../services/playgroundServices"
+
+// Filter project templates to only include HTML and React options
+const FILTERED_PROJECT_TEMPLATES = {
+  basic: PROJECT_TEMPLATES.basic, // HTML option
+  react: PROJECT_TEMPLATES.react, // React option
+}
 
 export default function Playground() {
   // Theme and layout state
@@ -30,8 +54,14 @@ export default function Playground() {
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState("")
   const [selectedProjectTemplate, setSelectedProjectTemplate] = useState("basic")
-  const [projectTemplates, setProjectTemplates] = useState(PROJECT_TEMPLATES)
+  const [projectTemplates, setProjectTemplates] = useState(FILTERED_PROJECT_TEMPLATES)
   const [selectedFolderId, setSelectedFolderId] = useState(null)
+  const [projectType, setProjectType] = useState("html") // "html" or "react"
+
+  // Project selection state
+  const [showProjectSelector, setShowProjectSelector] = useState(true)
+  const [currentProject, setCurrentProject] = useState(null)
+  const [userProjects, setUserProjects] = useState([])
 
   // Package management state
   const [packages, setPackages] = useState([])
@@ -74,12 +104,20 @@ export default function Playground() {
   const autoSaveTimeoutRef = useRef(null)
 
   // User ID for file management
-  const userId = typeof window !== "undefined" ? localStorage.getItem("user_id") || "default_user" : "default_user"
+  const [userId, setUserId] = useState(null)
+
+  // Track deleted files that are still open in tabs
+  const [deletedOpenFiles, setDeletedOpenFiles] = useState([])
 
   // Initialize with default files and user files
   useEffect(() => {
-    // Load user files from API and merge with defaults
-    loadUserFiles()
+    // Get user ID from localStorage
+    const storedUserId = localStorage.getItem("user_id")
+    if (storedUserId) {
+      setUserId(storedUserId)
+    } else {
+      console.error("User ID not found in localStorage")
+    }
 
     // Set theme based on system preference
     if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -91,6 +129,20 @@ export default function Playground() {
     loadProjectTemplates()
   }, [])
 
+  // Load user projects when user ID is available
+  useEffect(() => {
+    if (userId) {
+      fetchUserProjects(userId)
+    }
+  }, [userId])
+
+  // Load project files when project changes
+  useEffect(() => {
+    if (currentProject) {
+      loadProjectFiles(currentProject.id)
+    }
+  }, [currentProject])
+
   // Load project templates from API or use defaults
   const loadProjectTemplates = async () => {
     try {
@@ -98,12 +150,72 @@ export default function Playground() {
       // const templates = await PlaygroundServices.getProjectTemplates()
       // setProjectTemplates(templates)
 
-      // For now, use default templates
-      setProjectTemplates(PROJECT_TEMPLATES)
+      // For now, use filtered default templates
+      setProjectTemplates(FILTERED_PROJECT_TEMPLATES)
     } catch (error) {
       console.log("Using default project templates")
       // Use default templates if API fails
-      setProjectTemplates(PROJECT_TEMPLATES)
+      setProjectTemplates(FILTERED_PROJECT_TEMPLATES)
+    }
+  }
+
+  // Fetch user projects
+  const fetchUserProjects = async (userId) => {
+    setIsLoading(true)
+    try {
+      const projects = await PlaygroundServices.getUserProjects(userId)
+
+      console.log("API Response:", projects)
+
+      // Ensure projects is always an array
+      if (Array.isArray(projects)) {
+        setUserProjects(projects)
+      } else if (projects && Array.isArray(projects.projects)) {
+        setUserProjects(projects.projects)
+      } else {
+        console.error("Expected an array, got:", projects)
+        setUserProjects([]) // Set empty array to prevent errors
+      }
+    } catch (error) {
+      console.error("Error fetching user projects:", error)
+      addConsoleLog(`Failed to fetch projects: ${error.message}`, "error")
+      setUserProjects([]) // Prevent crash on error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Load project files from the backend
+  const loadProjectFiles = async (projectId) => {
+    setIsLoading(true)
+    try {
+      const projectData = await PlaygroundServices.getProjectWithFiles(projectId)
+
+      // Transform backend file format to match frontend expectations
+      const transformedFiles = projectData.files.map((file) => ({
+        id: file.file_id, // Ensure compatibility with backend
+        name: `${file.file_name}.${file.file_extension}`,
+        type: file.file_extension,
+        content: file.file_content || "", // Now fetched from backend
+        path: file.file_path || "/",
+        lastModified: file.updated_at,
+        project_id: projectData.project_id, // Ensuring correct reference
+      }))
+
+      setFiles(transformedFiles)
+
+      // If there are files, open the first one
+      if (transformedFiles.length > 0) {
+        const firstFile = transformedFiles[0]
+        openFileInTab(firstFile)
+      }
+
+      addConsoleLog(`Loaded project: ${projectData.name}`, "info")
+    } catch (error) {
+      console.error("Error loading project files:", error)
+      addConsoleLog(`Failed to load project files: ${error.message}`, "error")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -188,6 +300,27 @@ export default function Playground() {
     }
   }
 
+  // Handle project selection
+  const handleSelectProject = (project) => {
+    setCurrentProject(project)
+    setShowProjectSelector(false)
+
+    // Determine project type based on project description or name
+    if (project.description && project.description.toLowerCase().includes("react")) {
+      setProjectType("react")
+    } else if (project.name && project.name.toLowerCase().includes("react")) {
+      setProjectType("react")
+    } else {
+      setProjectType("html")
+    }
+  }
+
+  // Handle creating a new project without selecting an existing one
+  const handleCreateNewProject = () => {
+    setShowProjectSelector(false)
+    setIsCreatingProject(true)
+  }
+
   // Create a new project from template
   const createNewProject = async () => {
     if (!newProjectName.trim()) {
@@ -199,70 +332,70 @@ export default function Playground() {
     addConsoleLog(`Creating new project: ${newProjectName}...`, "info")
 
     try {
-      // If API fails, create project locally
-      const template = projectTemplates[selectedProjectTemplate]
-      if (template) {
-        // Generate local IDs for files
-        const newFiles = template.files.map((file) => ({
-          ...file,
-          id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        }))
+      // Determine project type
+      const newProjectType = selectedProjectTemplate === "react" ? "react" : "html"
+      setProjectType(newProjectType)
 
-        setFiles(newFiles)
-
-        // Set the first file as active and open it in a tab
-        if (newFiles.length > 0) {
-          const firstFile = newFiles.find((f) => f.name === "index.html") || newFiles[0]
-          setActiveFile(firstFile)
-          setOpenTabs([firstFile])
-          setActiveTabId(firstFile.id)
-        }
-
-        // Parse package.json to extract dependencies
-        try {
-          const packageJsonFile = newFiles.find((f) => f.name === "package.json")
-          if (packageJsonFile) {
-            const packageJson = JSON.parse(packageJsonFile.content)
-
-            const newPackages = []
-
-            // Add dependencies
-            if (packageJson.dependencies) {
-              Object.entries(packageJson.dependencies).forEach(([name, version]) => {
-                newPackages.push({
-                  name,
-                  version: version.replace(/[\^~]/, ""),
-                  type: "dependency",
-                })
-              })
-            }
-
-            // Add devDependencies
-            if (packageJson.devDependencies) {
-              Object.entries(packageJson.devDependencies).forEach(([name, version]) => {
-                newPackages.push({
-                  name,
-                  version: version.replace(/[\^~]/, ""),
-                  type: "devDependency",
-                })
-              })
-            }
-
-            setPackages(newPackages)
-            addConsoleLog(`Loaded ${newPackages.length} packages from package.json`, "info")
-          }
-        } catch (error) {
-          console.error("Error parsing package.json:", error)
-          addConsoleLog(`Failed to parse package.json: ${error.message}`, "error")
-        }
-
-        addConsoleLog(`Project "${newProjectName}" created locally`, "success")
-      } else {
-        addConsoleLog(`Failed to create project: Template not found`, "error")
+      // Create project in backend
+      const projectData = {
+        name: newProjectName,
+        description: `Created from ${FILTERED_PROJECT_TEMPLATES[selectedProjectTemplate].name} template`,
+        user_id: typeof userId === "number" ? userId.toString() : userId, // Ensure UUID format
+        id: uuidv4(), // Generate project UUID
       }
-    } finally {
+
+      const createdProject = await PlaygroundServices.createProject(projectData)
+
+      // Debugging: Log the full response
+      console.log("📥 Project API Response:", createdProject)
+
+      const projectId = createdProject?.project_id || createdProject?.id
+
+      if (!projectId) {
+        throw new Error("Project creation failed, no project ID returned.")
+      }
+
+      // Get template files
+      const templateFiles = FILTERED_PROJECT_TEMPLATES[selectedProjectTemplate].files
+
+      // Ensure all files are created
+      const filePromises = templateFiles.map(async (file) => {
+        const lastDotIndex = file.name.lastIndexOf(".")
+        const fileName = file.name.substring(0, lastDotIndex) // Extract name
+        const fileExtension = file.name.substring(lastDotIndex + 1) // Extract extension
+        const projectId = createdProject.project_id
+        const fileData = {
+          file_name: fileName,
+          file_extension: fileExtension,
+          file_content: file.content,
+          file_path: file.path,
+          user_id: userId,
+          project_id: projectId,
+          id: uuidv4(), // Generate UUID for each file
+        }
+
+        try {
+          return await PlaygroundServices.createPlaygroundFile(fileData)
+        } catch (fileError) {
+          console.error(`❌ Error creating file '${file.name}':`, fileError)
+          throw new Error(`Failed to create file '${file.name}'`)
+        }
+      })
+
+      await Promise.all(filePromises) // Wait for all file creations
+
+      // Load the project
+      setCurrentProject(createdProject)
+      await loadProjectFiles(createdProject.id)
+
       setIsCreatingProject(false)
       setNewProjectName("")
+
+      addConsoleLog(`Created new project: ${newProjectName}`, "success")
+    } catch (error) {
+      console.error("❌ Error creating project:", error)
+      addConsoleLog(`Failed to create project: ${error.message}`, "error")
+    } finally {
       setIsLoading(false)
     }
   }
@@ -290,31 +423,64 @@ export default function Playground() {
 
   // Save current file to API
   const saveCurrentFile = async () => {
-    if (!activeFile || !userId) {
-      console.error("❌ Missing activeFile or userId", { activeFile, userId })
-      return
-    }
+    if (!activeFile) return
 
     setIsSaving(true)
     setSaveStatus("saving")
 
     try {
-      // Simulate saving
+      // Check if it's a new file (local ID) or existing file
+      if (activeFile.id.toString().startsWith("local_")) {
+        // New file - create it in the backend
+        const fileData = {
+          file_name: activeFile.name.split(".")[0],
+          file_extension: activeFile.name.split(".")[1],
+          file_content: activeFile.content,
+          file_path: activeFile.path,
+          user_id: userId,
+          project_id: currentProject?.id,
+          id: uuidv4(), // Generate UUID for new file
+        }
+
+        const response = await PlaygroundServices.createPlaygroundFile(fileData)
+
+        // Update the file ID with the one from the backend
+        setFiles((prev) =>
+          prev.map((f) => (f.id === activeFile.id ? { ...f, id: response.file_id || response.id } : f)),
+        )
+
+        // Update open tabs
+        setOpenTabs((prev) =>
+          prev.map((tab) => (tab.id === activeFile.id ? { ...tab, id: response.file_id || response.id } : tab)),
+        )
+
+        // Update active file and tab
+        setActiveFile((prev) => ({ ...prev, id: response.file_id || response.id }))
+        setActiveTabId(response.file_id || response.id)
+
+        addConsoleLog(`Created file: ${activeFile.name}`, "success")
+      } else {
+        // Existing file - update it
+        const fileData = {
+          file_content: activeFile.content,
+          project_id: currentProject?.id,
+        }
+
+        await PlaygroundServices.updateFile(activeFile.id, fileData)
+        addConsoleLog(`Updated file: ${activeFile.name}`, "success")
+      }
+
+      setSaveStatus("saved")
+
+      // Reset save status after a delay
       setTimeout(() => {
-        setSaveStatus("saved")
-
-        // Reset save status after a delay
-        setTimeout(() => {
-          setSaveStatus(null)
-        }, 2000)
-
-        addConsoleLog(`✅ Saved file: ${activeFile.name}`, "success")
-        setIsSaving(false)
-      }, 1000)
+        setSaveStatus(null)
+      }, 2000)
     } catch (error) {
-      console.error("❌ Error saving file:", error)
+      console.error("Error saving file:", error)
       addConsoleLog(`Failed to save file: ${error.message}`, "error")
       setSaveStatus("error")
+    } finally {
       setIsSaving(false)
     }
   }
@@ -331,38 +497,102 @@ export default function Playground() {
     addConsoleLog("📤 Saving all files...", "info")
 
     try {
-      // Simulate saving
+      // Save each file that has a local ID
+      const unsavedFiles = files.filter((file) => file.id.toString().startsWith("local_"))
+
+      for (const file of unsavedFiles) {
+        const fileData = {
+          file_name: file.name.split(".")[0],
+          file_extension: file.name.split(".")[1],
+          file_content: file.content,
+          file_path: file.path,
+          user_id: userId,
+          project_id: currentProject?.id,
+        }
+
+        const response = await PlaygroundServices.createPlaygroundFile(fileData)
+
+        // Update the file ID with the one from the backend
+        setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, id: response.file_id || response.id } : f)))
+
+        // Update open tabs if needed
+        setOpenTabs((prev) =>
+          prev.map((tab) => (tab.id === file.id ? { ...tab, id: response.file_id || response.id } : tab)),
+        )
+
+        // Update active file and tab if needed
+        if (activeFile && activeFile.id === file.id) {
+          setActiveFile((prev) => ({ ...prev, id: response.file_id || response.id }))
+          setActiveTabId(response.file_id || response.id)
+        }
+      }
+
+      // Update all other files
+      const savedFiles = files.filter((file) => !file.id.toString().startsWith("local_"))
+
+      for (const file of savedFiles) {
+        const fileData = {
+          file_content: file.content,
+          project_id: currentProject?.id,
+        }
+
+        await PlaygroundServices.updateFile(file.id, fileData)
+      }
+
+      setSaveStatus("saved")
+      addConsoleLog(`✅ Saved ${files.length} files successfully`, "success")
+
+      // Reset save status after a delay
       setTimeout(() => {
-        setSaveStatus("saved")
-
-        // Reset save status after a delay
-        setTimeout(() => {
-          setSaveStatus(null)
-        }, 2000)
-
-        addConsoleLog(`✅ Saved ${files.length} files successfully`, "success")
-        setIsSaving(false)
-      }, 1500)
+        setSaveStatus(null)
+      }, 2000)
     } catch (error) {
       console.error("❌ Error saving files:", error)
       addConsoleLog(`Failed to save all files: ${error.message}`, "error")
       setSaveStatus("error")
+    } finally {
       setIsSaving(false)
     }
   }
 
   // Delete file from API
-  const deleteFileFromServer = async (fileId) => {
-    if (!fileId) return
-
+  const deleteFile = async (fileId) => {
     try {
-      // Simulate API call
-      addConsoleLog("File deleted from server", "success")
+      const fileToDelete = files.find((file) => file.id === fileId)
+      if (!fileToDelete) return
+
+      // Check if the file is open in a tab
+      const isOpen = openTabs.some((tab) => tab.id === fileId)
+
+      // If the file is open, add it to deletedOpenFiles
+      if (isOpen) {
+        setDeletedOpenFiles((prev) => [...prev, { ...fileToDelete, isDeleted: true }])
+      }
+
+      // Check if it's a local file (not yet saved to backend)
+      if (fileId.toString().startsWith("local_")) {
+        // Just remove it from the state
+        setFiles((prev) => prev.filter((f) => f.id !== fileId))
+
+        // Don't close the tab if it's open
+        addConsoleLog(`Deleted file`, "info")
+      } else {
+        // Delete from backend
+        await PlaygroundServices.deleteFile(fileId)
+
+        // Remove from state
+        setFiles((prev) => prev.filter((f) => f.id !== fileId))
+
+        // Don't close the tab if it's open
+        addConsoleLog(`Deleted file`, "success")
+      }
     } catch (error) {
-      console.error("Error deleting file from server:", error)
-      addConsoleLog(`Failed to delete file from server: ${error.message}`, "error")
+      console.error("Error deleting file:", error)
+      addConsoleLog(`Failed to delete file: ${error.message}`, "error")
     }
   }
+
+  // Add console log
   const addConsoleLog = (message, type = "log") => {
     setConsoleOutput((prev) => [
       ...prev,
@@ -373,7 +603,7 @@ export default function Playground() {
       },
     ])
   }
-  
+
   // Update preview iframe
   const updatePreview = useCallback(
     (pageName = currentPreviewPage) => {
@@ -425,7 +655,7 @@ export default function Playground() {
         }
       }, 500)
     },
-    [files, currentPreviewPage, addConsoleLog, setPreviewError, setIsProcessing, setRuntimeErrors],
+    [files, currentPreviewPage],
   )
 
   // Auto-refresh preview when files change
@@ -456,11 +686,19 @@ export default function Playground() {
         clearTimeout(autoSaveTimeoutRef.current)
       }
     }
-  }, [activeFile?.content, settings.autoSave, saveCurrentFile])
+  }, [activeFile?.content, settings.autoSave])
 
   // Update file content
   const updateFileContent = (fileId, newContent) => {
-    setFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, content: newContent } : file)))
+    // First check if the file is in the main files array
+    if (files.some((file) => file.id === fileId)) {
+      setFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, content: newContent } : file)))
+    }
+
+    // Then check if it's in the deletedOpenFiles array
+    if (deletedOpenFiles.some((file) => file.id === fileId)) {
+      setDeletedOpenFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, content: newContent } : file)))
+    }
 
     if (activeFile && activeFile.id === fileId) {
       setActiveFile((prev) => ({ ...prev, content: newContent }))
@@ -468,40 +706,6 @@ export default function Playground() {
 
     // Update content in open tabs
     setOpenTabs((prev) => prev.map((tab) => (tab.id === fileId ? { ...tab, content: newContent } : tab)))
-  }
-
-  // Delete a file
-  const deleteFile = (id) => {
-    const fileToDelete = files.find((file) => file.id === id)
-    if (!fileToDelete) return
-
-    // If file exists on server, delete it there too
-    if (
-      typeof fileToDelete.id === "number" ||
-      (typeof fileToDelete.id === "string" && !fileToDelete.id.startsWith("local_"))
-    ) {
-      deleteFileFromServer(fileToDelete.id)
-    }
-
-    setFiles((prev) => prev.filter((file) => file.id !== id))
-
-    // Remove from open tabs
-    setOpenTabs((prev) => {
-      const updatedTabs = prev.filter((tab) => tab.id !== id) // Changed from tabId to id
-
-      // If we're deleting the active tab, set a new active tab
-      if (activeTabId === id && updatedTabs.length > 0) {
-        setActiveTabId(updatedTabs[0].id)
-        setActiveFile(updatedTabs[0])
-      } else if (updatedTabs.length === 0) {
-        setActiveTabId(null)
-        setActiveFile(null)
-      }
-
-      return updatedTabs
-    })
-
-    addConsoleLog(`Deleted file: ${fileToDelete.name}`, "info")
   }
 
   // Toggle folder expansion
@@ -526,6 +730,14 @@ export default function Playground() {
     // Check if file is already open in a tab
     const isAlreadyOpen = openTabs.some((tab) => tab.id === file.id)
 
+    // Check if this file was deleted but is still tracked
+    const deletedFile = deletedOpenFiles.find((f) => f.id === file.id)
+
+    if (deletedFile) {
+      // Use the deleted file's content
+      file = deletedFile
+    }
+
     if (!isAlreadyOpen) {
       setOpenTabs((prev) => [...prev, file])
     }
@@ -542,8 +754,9 @@ export default function Playground() {
 
   // Close a tab
   const closeTab = (tabId, event) => {
-    event.stopPropagation()
+    if (event) event.stopPropagation()
 
+    // Remove the tab
     setOpenTabs((prev) => {
       const updatedTabs = prev.filter((tab) => tab.id !== tabId)
 
@@ -558,6 +771,9 @@ export default function Playground() {
 
       return updatedTabs
     })
+
+    // Also remove from deletedOpenFiles if it exists there
+    setDeletedOpenFiles((prev) => prev.filter((file) => file.id !== tabId))
   }
 
   // Toggle between light and dark theme
@@ -624,6 +840,32 @@ export default function Playground() {
     }
   }
 
+  // Delete a project
+  const deleteProject = async (projectId) => {
+    try {
+      await PlaygroundServices.deleteProject(projectId)
+
+      // Refresh the projects list
+      fetchUserProjects(userId)
+
+      addConsoleLog(`Deleted project`, "success")
+    } catch (error) {
+      console.error("Error deleting project:", error)
+      addConsoleLog(`Failed to delete project: ${error.message}`, "error")
+    }
+  }
+
+  // Go back to project selection
+  const goBackToProjects = () => {
+    setShowProjectSelector(true)
+    setCurrentProject(null)
+    setFiles([])
+    setOpenTabs([])
+    setActiveFile(null)
+    setActiveTabId(null)
+    setDeletedOpenFiles([])
+  }
+
   const handleTabChange = (tab) => {
     setActiveTab(tab)
 
@@ -631,6 +873,147 @@ export default function Playground() {
     if (tab === "preview") {
       updatePreview()
     }
+  }
+
+  // Handle file upload
+  const handleFileUpload = async (fileData) => {
+    setIsLoading(true)
+    try {
+      const response = await PlaygroundServices.createPlaygroundFile(fileData)
+
+      // Create a file object in our app's format
+      const newFile = {
+        id: response.file_id || response.id,
+        name: `${fileData.file_name}.${fileData.file_extension}`,
+        type: fileData.file_extension,
+        content: fileData.file_content,
+        path: fileData.file_path || "/",
+        lastModified: new Date().toISOString(),
+        project_id: fileData.project_id,
+      }
+
+      // Add to files state
+      setFiles((prev) => [...prev, newFile])
+
+      // Open the file
+      openFileInTab(newFile)
+
+      addConsoleLog(`Uploaded file: ${newFile.name}`, "success")
+      return response
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      addConsoleLog(`Failed to upload file: ${error.message}`, "error")
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Render project selector
+  const renderProjectSelector = () => {
+    return (
+      <div className={styles.projectSelector}>
+        <div className={styles.projectSelectorHeader}>
+          <h2>Projects</h2>
+          <div className={styles.projectSelectorActions}>
+            <button onClick={() => setIsCreatingProject(true)} className={styles.createProjectButton}>
+              <Plus size={16} /> New Project
+            </button>
+          </div>
+        </div>
+
+        {isCreatingProject ? (
+          <div className={styles.newFileForm}>
+            <h3>Create New Project</h3>
+            <div className={styles.formGroup}>
+              <label htmlFor="projectName">Project Name:</label>
+              <input
+                type="text"
+                id="projectName"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                placeholder="My Project"
+                className={styles.newFileInput}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="projectTemplate">Template:</label>
+              <select
+                id="projectTemplate"
+                value={selectedProjectTemplate}
+                onChange={(e) => setSelectedProjectTemplate(e.target.value)}
+                className={styles.newFileSelect}
+              >
+                {Object.entries(FILTERED_PROJECT_TEMPLATES).map(([key, template]) => (
+                  <option key={key} value={key}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.templateDescription}>
+              {FILTERED_PROJECT_TEMPLATES[selectedProjectTemplate]?.description}
+            </div>
+            <div className={styles.newFileActions}>
+              <button onClick={createNewProject} className={styles.newFileButton} disabled={isLoading}>
+                {isLoading ? <RefreshCw size={14} className={styles.spinning} /> : "Create Project"}
+              </button>
+              <button onClick={() => setIsCreatingProject(false)} className={styles.newFileButton}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.fileList}>
+            {isLoading ? (
+              <div className={styles.emptyState}>
+                <RefreshCw size={24} className={styles.spinning} />
+                <p>Loading projects...</p>
+              </div>
+            ) : !userProjects || userProjects.length === 0 ? (
+              <div className={styles.emptyState}>
+                <Folder size={32} />
+                <p>No projects found</p>
+                <button onClick={() => setIsCreatingProject(true)} className={styles.createFileButton}>
+                  <Plus size={14} /> Create New Project
+                </button>
+              </div>
+            ) : (
+              userProjects.map((project) => (
+                <div key={project.id} className={styles.fileItem}>
+                  <div className={styles.fileItemContent} onClick={() => handleSelectProject(project)}>
+                    <Folder size={16} />
+                    <span className={styles.fileName}>{project.name}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteProject(project.id)
+                    }}
+                    className={styles.fileDeleteButton}
+                    title="Delete project"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        <div className={styles.newFileActions}>
+          <button onClick={handleCreateNewProject} className={styles.newFileButton}>
+            Continue without a project
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // If showing project selector, render that instead of the playground
+  if (showProjectSelector) {
+    return <div className={styles.playgroundContainer}>{renderProjectSelector()}</div>
   }
 
   return (
@@ -726,7 +1109,7 @@ export default function Playground() {
             setNewProjectName={setNewProjectName}
             selectedProjectTemplate={selectedProjectTemplate}
             setSelectedProjectTemplate={setSelectedProjectTemplate}
-            projectTemplates={projectTemplates}
+            projectTemplates={FILTERED_PROJECT_TEMPLATES}
             createNewProject={createNewProject}
             isLoading={isLoading}
             loadUserFiles={loadUserFiles}
@@ -735,6 +1118,15 @@ export default function Playground() {
             updateFileContent={updateFileContent}
             addConsoleLog={addConsoleLog}
             setIsSidebarOpen={setIsSidebarOpen}
+            playgroundServices={PlaygroundServices}
+            currentProject={currentProject}
+            userId={userId}
+            onFileUpload={handleFileUpload}
+            goBackToProjects={goBackToProjects}
+            projectType={projectType}
+            openTabs={openTabs}
+            deletedOpenFiles={deletedOpenFiles}
+            setDeletedOpenFiles={setDeletedOpenFiles}
           />
         )}
 
@@ -758,6 +1150,8 @@ export default function Playground() {
             syntaxErrors={syntaxErrors}
             setSyntaxErrors={setSyntaxErrors}
             saveCurrentFile={saveCurrentFile}
+            files={files}
+            deletedOpenFiles={deletedOpenFiles}
           />
         </div>
 
@@ -780,6 +1174,8 @@ export default function Playground() {
             addConsoleLog={addConsoleLog}
             setRuntimeErrors={setRuntimeErrors}
             CDN_LINKS={CDN_LINKS}
+            projectType={projectType}
+            deletedOpenFiles={deletedOpenFiles}
           />
         </div>
       </div>
@@ -803,7 +1199,10 @@ export default function Playground() {
         <div className={styles.statusLeft}>
           {activeFile && (
             <>
-              <span className={styles.statusItem}>{activeFile.type.toUpperCase()}</span>
+              {/* Check if activeFile.type is defined before calling toUpperCase */}
+              <span className={styles.statusItem}>
+                {activeFile.type ? activeFile.type.toUpperCase() : "Unknown Type"}
+              </span>
               <span className={styles.statusItem}>
                 {activeFile.path === "/" ? activeFile.name : `${activeFile.path}/${activeFile.name}`}
               </span>

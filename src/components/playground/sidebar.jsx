@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   ChevronLeft,
   ChevronRight,
@@ -18,8 +18,11 @@ import {
   Package,
   Search,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react"
+import PlaygroundServices from "../../services/playgroundServices"
 import styles from "../../styles/playground.module.css"
+import { DEFAULT_TEMPLATES, PROJECT_TEMPLATES } from "../playground/constants"
 
 // NPM Registry API
 const NPM_REGISTRY_API = "https://registry.npmjs.org"
@@ -45,6 +48,12 @@ const POPULAR_PACKAGES = [
     description: "A utility-first CSS framework for rapidly building custom user interfaces",
   },
 ]
+
+// Filter project templates to only include HTML and React options
+const FILTERED_PROJECT_TEMPLATES = {
+  basic: PROJECT_TEMPLATES.basic, // HTML option
+  react: PROJECT_TEMPLATES.react, // React option
+}
 
 export default function Sidebar({
   files,
@@ -72,6 +81,13 @@ export default function Sidebar({
   addConsoleLog,
   setIsSidebarOpen,
   setExpandedFolders,
+  currentProject,
+  userId,
+  goBackToProjects,
+  projectType,
+  openTabs,
+  deletedOpenFiles,
+  setDeletedOpenFiles,
 }) {
   const [activeSidebarTab, setActiveSidebarTab] = useState("files")
   const [fileViewMode, setFileViewMode] = useState("tree")
@@ -83,8 +99,30 @@ export default function Sidebar({
   const [isInstallingPackage, setIsInstallingPackage] = useState(false)
   const [searchResults, setSearchResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef(null)
 
   const searchTimeoutRef = useRef(null)
+
+  // Track deleted files that are still open in tabs
+  useEffect(() => {
+    // When a file is deleted, check if it's open in a tab
+    const trackDeletedFiles = () => {
+      // For each open tab, check if the file still exists in the files array
+      openTabs.forEach((tab) => {
+        const fileExists = files.some((f) => f.id === tab.id)
+
+        if (!fileExists && !deletedOpenFiles.some((df) => df.id === tab.id)) {
+          // This file is open in a tab but has been deleted
+          // Add it to our deletedOpenFiles state
+          setDeletedOpenFiles((prev) => [...prev, tab])
+        }
+      })
+    }
+
+    trackDeletedFiles()
+  }, [files, openTabs, deletedOpenFiles, setDeletedOpenFiles])
 
   // Get file icon based on file type
   const getFileIcon = (fileType) => {
@@ -105,7 +143,7 @@ export default function Sidebar({
   }
 
   // Create a new file
-  const createNewFile = () => {
+  const createNewFile = async () => {
     if (!newFileName.trim()) {
       addConsoleLog("File name cannot be empty", "error")
       return
@@ -129,48 +167,184 @@ export default function Sidebar({
 
     // If it's an HTML file, use a template with proper structure
     if (newFileType === "html") {
-      content = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${newFileName}</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="app">
-    <h1>${newFileName}</h1>
-    <p>This is a new HTML page.</p>
-    <p><a href="index.html">Back to Home</a></p>
-    <!-- Add your content here -->
-  </div>
-  <script src="script.js"></script>
-</body>
-</html>`
+      content = DEFAULT_TEMPLATES.html
+    } else if (newFileType === "css") {
+      content = DEFAULT_TEMPLATES.css
+    } else if (newFileType === "javascript") {
+      content = DEFAULT_TEMPLATES.javascript
+    } else if (newFileType === "jsx") {
+      content = DEFAULT_TEMPLATES.jsx
+    } else if (newFileType === "json") {
+      content = DEFAULT_TEMPLATES.json
     }
 
+    const tempId = `local_${Date.now()}`
+
     const newFile = {
-      id: `local_${Date.now()}`, // Use local_ prefix for unsaved files
+      id: tempId, // Use local_ prefix for unsaved files
       name: newFileName,
       type: newFileType,
       content: content,
       path: path,
       lastModified: new Date().toISOString(),
+      project_id: currentProject?.id, // Associate with current project
     }
 
+    // Add to local state first
     setFiles((prev) => [...prev, newFile])
 
     // Open the new file in a tab
     openFileInTab(newFile)
 
+    // Try to save to server if we have a project
+    if (currentProject?.id && userId) {
+      try {
+        const fileNameParts = newFileName.split(".")
+        const fileExtension = fileNameParts.pop()
+        const fileName = fileNameParts.join(".")
+
+        const fileData = {
+          file_name: fileName,
+          file_extension: fileExtension,
+          file_content: content,
+          file_path: path,
+          user_id: userId,
+          project_id: currentProject.id,
+        }
+
+        const response = await PlaygroundServices.createPlaygroundFile(fileData)
+
+        // Update the file ID with the one from the server
+        setFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, id: response.file_id || response.id } : f)))
+
+        addConsoleLog(`Created and saved new file: ${newFileName}`, "success")
+      } catch (error) {
+        console.error("Error saving file to server:", error)
+        addConsoleLog(`File created locally but failed to save to server: ${error.message}`, "warning")
+      }
+    } else {
+      addConsoleLog(`Created new file: ${newFileName} (not saved to server)`, "info")
+    }
+
     setIsCreatingFile(false)
     setNewFileName("")
+  }
 
-    addConsoleLog(`Created new file: ${newFileName} in ${path}`, "success")
+  // Handle file change
+  const handleFileChange = (e) => {
+    if (e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0])
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile) return
+
+    setIsUploading(true)
+
+    try {
+      // Read file content
+      const fileContent = await readFileContent(selectedFile)
+
+      // Get file extension
+      const fileName = selectedFile.name
+      const fileNameParts = fileName.split(".")
+      const fileExtension = fileNameParts.pop()
+      const fileNameWithoutExt = fileNameParts.join(".")
+
+      // Create file data object
+      const fileData = {
+        file_name: fileNameWithoutExt,
+        file_extension: fileExtension,
+        file_content: fileContent,
+        user_id: userId,
+        project_id: currentProject?.id,
+        file_path: "/",
+      }
+
+      // Save to server
+      const response = await PlaygroundServices.createPlaygroundFile(fileData)
+
+      // Create a file object in our app's format
+      const newFile = {
+        id: response.file_id || response.id,
+        name: `${fileNameWithoutExt}.${fileExtension}`,
+        type: fileExtension,
+        content: fileContent,
+        path: "/",
+        lastModified: new Date().toISOString(),
+        project_id: currentProject?.id,
+      }
+
+      // Add to files state
+      setFiles((prev) => [...prev, newFile])
+
+      // Open the file
+      openFileInTab(newFile)
+
+      // Reset form
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      addConsoleLog(`Uploaded file: ${fileName}`, "success")
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      addConsoleLog(`Failed to upload file: ${error.message}`, "error")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // Helper function to read file content
+  const readFileContent = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+
+      reader.onload = (event) => {
+        resolve(event.target.result)
+      }
+
+      reader.onerror = (error) => {
+        reject(error)
+      }
+
+      reader.readAsText(file)
+    })
+  }
+
+  // Add file uploader component
+  const renderFileUploader = () => {
+    return (
+      <div className={styles.fileUploadForm}>
+        <input
+          type="file"
+          id="file-upload"
+          onChange={handleFileChange}
+          className={styles.fileUploadInput}
+          ref={fileInputRef}
+        />
+        <label htmlFor="file-upload" className={styles.fileUploadLabel}>
+          <Upload size={16} style={{ marginRight: "5px" }} />
+          {selectedFile ? selectedFile.name : "Choose a file"}
+        </label>
+
+        <button onClick={handleUpload} disabled={!selectedFile || isUploading} className={styles.fileUploadButton}>
+          {isUploading ? (
+            <>
+              <RefreshCw size={14} className={styles.spinning} /> Uploading...
+            </>
+          ) : (
+            "Upload"
+          )}
+        </button>
+      </div>
+    )
   }
 
   // Create a new folder
-  const createNewFolder = (parentFolderId = null) => {
+  const createNewFolder = async (parentFolderId = null) => {
     const folderName = prompt("Enter folder name:")
     if (!folderName) return
 
@@ -191,11 +365,14 @@ export default function Sidebar({
       return
     }
 
+    const tempId = `local_folder_${Date.now()}`
+
     const newFolder = {
-      id: `local_folder_${Date.now()}`,
+      id: tempId,
       name: folderName,
       type: "folder",
       path: path,
+      project_id: currentProject?.id,
     }
 
     setFiles((prev) => [...prev, newFolder])
@@ -208,7 +385,32 @@ export default function Sidebar({
       }))
     }
 
-    addConsoleLog(`Created new folder: ${folderName} in ${path}`, "success")
+    // Try to save to server if we have a project
+    if (currentProject?.id && userId) {
+      try {
+        const folderData = {
+          file_name: folderName,
+          file_extension: "folder",
+          file_content: "",
+          file_path: path,
+          user_id: userId,
+          project_id: currentProject.id,
+          isFolder: true,
+        }
+
+        const response = await PlaygroundServices.createPlaygroundFile(folderData)
+
+        // Update the folder ID with the one from the server
+        setFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, id: response.file_id || response.id } : f)))
+
+        addConsoleLog(`Created and saved new folder: ${folderName}`, "success")
+      } catch (error) {
+        console.error("Error saving folder to server:", error)
+        addConsoleLog(`Folder created locally but failed to save to server: ${error.message}`, "warning")
+      }
+    } else {
+      addConsoleLog(`Created new folder: ${folderName} (not saved to server)`, "info")
+    }
   }
 
   // Handle context menu for files and folders
@@ -289,21 +491,15 @@ export default function Sidebar({
       return
     }
 
-    // Skip if trying to import HTML into HTML
-    if (sourceFile.type === "html" && targetFile.type === "html") {
-      addConsoleLog("Cannot import HTML into HTML. Use links instead.", "warning")
-      return
-    }
-
     // Get component name from file name
-    const componentName = sourceFile.name.replace(/\.(js|jsx|ts|tsx|css|html)$/, "")
+    const componentName = sourceFile.name.replace(/\.(js|jsx|ts|tsx)$/, "")
 
     // Calculate relative path more accurately
     let importPath
 
     // If files are in the same directory
     if (sourceFile.path === targetFile.path) {
-      importPath = `./${sourceFile.name}`
+      importPath = `./${componentName}`
     } else {
       // Handle more complex relative paths
       const sourceParts = sourceFile.path === "/" ? [] : sourceFile.path.split("/").filter(Boolean)
@@ -327,49 +523,21 @@ export default function Sidebar({
 
       if (upLevels === 0 && downPath.length === 0) {
         // Same directory
-        importPath = `./${sourceFile.name}`
+        importPath = `./${componentName}`
       } else if (upLevels === 0) {
         // Target is in a parent directory of source
-        importPath = `./${downPath.join("/")}/${sourceFile.name}`
+        importPath = `./${downPath.join("/")}/${componentName}`
       } else if (downPath.length === 0) {
         // Source is in a parent directory of target
-        importPath = `${"../".repeat(upLevels)}${sourceFile.name}`
+        importPath = `${"../".repeat(upLevels)}${componentName}`
       } else {
         // Need to go up and then down
-        importPath = `${"../".repeat(upLevels)}${downPath.join("/")}/${sourceFile.name}`
+        importPath = `${"../".repeat(upLevels)}${downPath.join("/")}/${componentName}`
       }
     }
 
-    // Create appropriate import statement based on file types
-    let importStatement = ""
-
-    if (targetFile.type === "html" && (sourceFile.type === "css" || sourceFile.type === "javascript")) {
-      // For HTML files, create appropriate link or script tag
-      if (sourceFile.type === "css") {
-        importStatement = `<link rel="stylesheet" href="${importPath}">\n`
-        // Add to head if it exists
-        if (targetFile.content.includes("</head>")) {
-          updateFileContent(targetFileId, targetFile.content.replace("</head>", `  ${importStatement}</head>`))
-          addConsoleLog(`Added CSS link for ${sourceFile.name} to ${targetFile.name}`, "success")
-          return
-        }
-      } else if (sourceFile.type === "javascript" || sourceFile.name.endsWith(".js")) {
-        importStatement = `<script src="${importPath}"></script>\n`
-        // Add before closing body if it exists
-        if (targetFile.content.includes("</body>")) {
-          updateFileContent(targetFileId, targetFile.content.replace("</body>", `  ${importStatement}</body>`))
-          addConsoleLog(`Added script tag for ${sourceFile.name} to ${targetFile.name}`, "success")
-          return
-        }
-      }
-    } else if (targetFile.type === "javascript" || targetFile.type === "jsx" || targetFile.type === "tsx") {
-      // For JS/JSX/TSX files, create appropriate import statement
-      if (sourceFile.type === "css") {
-        importStatement = `import '${importPath}';\n`
-      } else {
-        importStatement = `import ${componentName} from '${importPath}';\n`
-      }
-    }
+    // Create import statement
+    const importStatement = `import ${componentName} from '${importPath}';\n`
 
     // Check if import already exists
     if (targetFile.content.includes(importStatement)) {
@@ -617,10 +785,14 @@ export default function Sidebar({
 
     // Render a single file
     const renderFile = (file) => {
+      // Check if this file is open in a tab but has been deleted
+      const isOpenButDeleted =
+        openTabs.some((tab) => tab.id === file.id) && deletedOpenFiles.some((df) => df.id === file.id)
+
       return (
         <div
           key={file.id}
-          className={`${styles.fileItem} ${activeFile?.id === file.id ? styles.active : ""}`}
+          className={`${styles.fileItem} ${activeFile?.id === file.id ? styles.active : ""} ${isOpenButDeleted ? styles.deletedFile : ""}`}
           onClick={() => openFileInTab(file)}
           onContextMenu={(e) => handleContextMenu(e, file.id, "file")}
         >
@@ -724,14 +896,16 @@ export default function Sidebar({
             onChange={(e) => setSelectedProjectTemplate(e.target.value)}
             className={styles.newFileSelect}
           >
-            {Object.entries(projectTemplates).map(([key, template]) => (
+            {Object.entries(FILTERED_PROJECT_TEMPLATES).map(([key, template]) => (
               <option key={key} value={key}>
                 {template.name}
               </option>
             ))}
           </select>
         </div>
-        <div className={styles.templateDescription}>{projectTemplates[selectedProjectTemplate]?.description}</div>
+        <div className={styles.templateDescription}>
+          {FILTERED_PROJECT_TEMPLATES[selectedProjectTemplate]?.description}
+        </div>
         <div className={styles.newFileActions}>
           <button onClick={createNewProject} className={styles.newFileButton} disabled={isLoading}>
             {isLoading ? <RefreshCw size={14} className={styles.spinning} /> : "Create Project"}
@@ -905,6 +1079,29 @@ export default function Sidebar({
         {/* Files Panel */}
         {activeSidebarTab === "files" && (
           <div className={styles.filesPanel}>
+            {/* Back to Projects Button */}
+            {currentProject && (
+              <button className={styles.backToProjectsButton} onClick={goBackToProjects}>
+                <ArrowLeft size={14} /> Back to Projects
+              </button>
+            )}
+
+            {/* Project Info */}
+            {currentProject && (
+              <div className={styles.currentProjectInfo}>
+                <h3 className={styles.currentProjectName}>{currentProject.name}</h3>
+                {currentProject.description && (
+                  <p className={styles.currentProjectDescription}>{currentProject.description}</p>
+                )}
+                <div className={styles.projectTypeTag}>
+                  {projectType === "react" ? "Code Project" : "HTML/CSS Project"}
+                </div>
+              </div>
+            )}
+
+            {/* File Uploader */}
+            {renderFileUploader()}
+
             <div className={styles.fileManagerHeader}>
               <span className={styles.fileManagerTitle}>Files</span>
               <div className={styles.fileManagerActions}>
@@ -960,8 +1157,12 @@ export default function Sidebar({
                   <option value="html">HTML</option>
                   <option value="css">CSS</option>
                   <option value="javascript">JavaScript</option>
-                  <option value="jsx">JSX</option>
-                  <option value="tsx">TSX</option>
+                  {projectType === "react" && (
+                    <>
+                      <option value="jsx">JSX</option>
+                      <option value="tsx">TSX</option>
+                    </>
+                  )}
                   <option value="json">JSON</option>
                 </select>
                 <div className={styles.newFileActions}>
@@ -974,10 +1175,8 @@ export default function Sidebar({
                 </div>
               </div>
             )}
-            {/* Project Creation Form */}
-            {isCreatingProject && renderProjectTemplateSelector()}
             {/* File List */}
-            {!isCreatingProject && <div className={styles.fileList}>{renderFileTree()}</div>}
+            <div className={styles.fileList}>{renderFileTree()}</div>
           </div>
         )}
         {/* Packages Panel */}

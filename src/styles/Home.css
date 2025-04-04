@@ -61,7 +61,7 @@
 .datavita-landing-page h1 {
   font-size: clamp(2.5rem, 5vw, 4.5rem) !important;
   letter-spacing: -0.03em !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 .datavita-landing-page h2 {
@@ -98,7 +98,7 @@
 .datavita-section-subtitle {
   text-align: center !important;
   color: var(--datavita-text-secondary) !important;
-  font-size: 1.125rem !important;
+  font-size: 1rem !important;
   max-width: 600px !important;
   margin: 2rem auto 3rem !important;
 }
@@ -340,7 +340,7 @@
 
 /* Hero Section */
 .datavita-hero {
-  padding: 12rem 0 8rem !important;
+  padding: 2rem 0 2rem !important;
   position: relative !important;
   overflow: hidden !important;
   min-height: 100vh !important;
@@ -1029,7 +1029,6 @@
 /* Dashboard Section */
 .datavita-dashboard-section {
   padding: 8rem 0 !important;
-  background-color: var(--datavita-bg-light) !important;
   position: relative !important;
   overflow: hidden !important;
 }
@@ -1134,7 +1133,6 @@
 /* Playground Section */
 .datavita-playground-section {
   padding: 8rem 0 !important;
-  background-color: var(--datavita-bg-white) !important;
   position: relative !important;
   overflow: hidden !important;
 }
@@ -1414,3 +1412,121 @@ body {
   }
 }
 
+/* Add these styles to your existing Home.css file */
+
+/* Background Paths Animation */
+.datavita-background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.datavita-background-paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.datavita-svg-container {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: var(--datavita-text-primary);
+  opacity: 0.3;
+}
+
+/* Ensure content appears above the background */
+.datavita-landing-page {
+  position: relative;
+  z-index: 1;
+}
+
+.datavita-header,
+.datavita-hero,
+.datavita-features,
+.datavita-dashboard-section,
+.datavita-playground-section,
+.datavita-testimonials,
+.datavita-pricing,
+.datavita-cta-section,
+.datavita-footer {
+  position: relative;
+  z-index: 5;
+}
+
+/* Make sure header background is still visible */
+.datavita-header-scrolled {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Optional: Adjust the opacity for different sections */
+.datavita-hero .datavita-background-paths {
+  opacity: 1;
+}
+
+.datavita-features .datavita-background-paths {
+  opacity: 0.7;
+}
+
+/* Keep the rest of your existing CSS */
+
+/* Background Paths Animation */
+.datavita-background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.datavita-background-paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.datavita-svg-container {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: var(--datavita-text-primary);
+  opacity: 0.3;
+}
+
+/* Ensure content appears above the background */
+.datavita-landing-page {
+  position: relative;
+  z-index: 1;
+}
+
+.datavita-header,
+.datavita-hero,
+.datavita-features,
+.datavita-dashboard-section,
+.datavita-playground-section,
+.datavita-testimonials,
+.datavita-pricing,
+.datavita-cta-section,
+.datavita-footer {
+  position: relative;
+  z-index: 5;
+}
+
+/* Make sure header background is still visible */
+.datavita-header-scrolled {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+}

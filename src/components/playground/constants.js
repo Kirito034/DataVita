@@ -1041,7 +1041,7 @@ export class ContactPage {
     return container;
   }
 }`,
-        path: "/pages",
+        path: "/components",
       },
       {
         name: "header.js",

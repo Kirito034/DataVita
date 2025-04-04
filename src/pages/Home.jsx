@@ -1,9 +1,10 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import "../styles/Home.css"
-import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import { useEffect, useRef, useState } from "react";
+import "../styles/Home.css";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,11 +16,65 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-} from "chart.js"
-import { Bar, Pie } from "react-chartjs-2"
+} from "chart.js";
+import { Bar, Pie, Line } from "react-chartjs-2";
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
+// Background Paths Component
+function FloatingPaths({ position }) {
+  const paths = Array.from({ length: 36 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    color: `rgba(15,23,42,${0.1 + i * 0.03})`,
+    width: 0.5 + i * 0.03,
+  }))
+
+  return (
+    <div className="datavita-background-paths">
+      <svg className="datavita-svg-container" viewBox="0 0 696 316" fill="none">
+        <title>Background Paths</title>
+        {paths.map((path) => (
+          <motion.path
+            key={path.id}
+            d={path.d}
+            stroke="currentColor"
+            strokeWidth={path.width}
+            strokeOpacity={0.1 + path.id * 0.03}
+            initial={{ pathLength: 0.3, opacity: 0.6 }}
+            animate={{
+              pathLength: 1,
+              opacity: [0.3, 0.6, 0.3],
+              pathOffset: [0, 1, 0],
+            }}
+            transition={{
+              duration: 20 + Math.random() * 10,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
+          />
+        ))}
+      </svg>
+    </div>
+  )
+}
 
 const Home = () => {
   const navigate = useNavigate()
@@ -308,10 +363,37 @@ const Home = () => {
     }
   }
 
+  const dashboardData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    datasets: [
+      {
+        label: 'Revenue',
+        data: [65, 59, 80, 81, 56, 55, 40],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.4,
+      },
+      {
+        label: 'Expenses',
+        data: [28, 48, 40, 19, 86, 27, 90],
+        borderColor: 'rgba(153, 102, 255, 1)',
+        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        tension: 0.4,
+      },
+    ],
+  };
+
   return (
     <div className="datavita-landing-page">
+      {/* Background Animation */}
+      <div className="datavita-background-container">
+        <FloatingPaths position={1} />
+        <FloatingPaths position={-1} />
+      </div>
+      
       {/* Header */}
       <header className="datavita-header" ref={headerRef}>
+        {/* Your existing header content */}
         <div className="datavita-container datavita-header-container">
           <div className="datavita-logo">
             <span className="datavita-logo-text">DataVita</span>
@@ -600,50 +682,58 @@ const Home = () => {
 
           {/* Dashboard Section */}
           <section id="dashboard-section" className="datavita-dashboard-section">
-            <div className="datavita-container">
-              <h2 className="datavita-section-title datavita-fade-in datavita-once">Powerful Dashboards</h2>
-              <p className="datavita-section-subtitle datavita-fade-in datavita-once datavita-delay-200">
-                Visualize your data with customizable dashboards for deeper insights
-              </p>
+      <div className="datavita-container">
+        <h2 className="datavita-section-title datavita-fade-in datavita-once">Powerful Dashboards</h2>
+        <p className="datavita-section-subtitle datavita-fade-in datavita-once datavita-delay-200">
+          Visualize your data with customizable dashboards for deeper insights
+        </p>
 
-              <div className="datavita-dashboard-showcase">
-                <div className="datavita-dashboard-image datavita-fade-in datavita-once">
-                  <div className="datavita-dashboard-floating">
-                    <div className="datavita-dashboard-screen">
-                      <div className="datavita-dashboard-header-bar"></div>
-                      <div className="datavita-dashboard-content">
-                        <div className="datavita-dashboard-widget"></div>
-                        <div className="datavita-dashboard-widget"></div>
-                        <div className="datavita-dashboard-widget-large"></div>
-                        <div className="datavita-dashboard-widget"></div>
-                        <div className="datavita-dashboard-widget"></div>
-                      </div>
-                    </div>
+        <div className="datavita-dashboard-showcase">
+          <div className="datavita-dashboard-image datavita-fade-in datavita-once">
+            <div className="datavita-dashboard-floating">
+              <div className="datavita-dashboard-screen">
+                <div className="datavita-dashboard-header-bar"></div>
+                <div className="datavita-dashboard-content">
+                  <div className="datavita-dashboard-widget">
+                    <Line data={dashboardData} />
                   </div>
-                </div>
-                <div className="datavita-dashboard-info datavita-slide-in datavita-once datavita-from-right">
-                  <h3>Custom Analytics Dashboard</h3>
-                  <p>
-                    Our powerful dashboard solution provides a comprehensive view of your data, enabling you to make informed decisions quickly. With our intuitive interface, you can:
-                  </p>
-                  <ul className="datavita-dashboard-features">
-                    <li>Create custom visualizations tailored to your specific needs</li>
-                    <li>Monitor key performance indicators in real-time</li>
-                    <li>Share insights with your team through collaborative dashboards</li>
-                    <li>Export reports in multiple formats for presentations</li>
-                  </ul>
-                  <div className="datavita-dashboard-cta">
-                    <button 
-                      onClick={() => handleProtectedNavigation("/dashboard")} 
-                      className="datavita-btn datavita-btn-primary"
-                    >
-                      Explore Dashboards
-                    </button>
+                  <div className="datavita-dashboard-widget">
+                    <Line data={dashboardData} />
+                  </div>
+                  <div className="datavita-dashboard-widget-large">
+                    <Line data={dashboardData} />
+                  </div>
+                  <div className="datavita-dashboard-widget">
+                    <Line data={dashboardData} />
+                  </div>
+                  <div className="datavita-dashboard-widget">
+                    <Line data={dashboardData} />
                   </div>
                 </div>
               </div>
             </div>
-          </section>
+          </div>
+
+          <div className="datavita-dashboard-info datavita-slide-in datavita-once datavita-from-right">
+            <h3>Custom Analytics Dashboard</h3>
+            <p>
+              Our powerful dashboard solution provides a comprehensive view of your data, enabling you to make informed decisions quickly. With our intuitive interface, you can:
+            </p>
+            <ul className="datavita-dashboard-features">
+              <li>Create custom visualizations tailored to your specific needs</li>
+              <li>Monitor key performance indicators in real-time</li>
+              <li>Share insights with your team through collaborative dashboards</li>
+              <li>Export reports in multiple formats for presentations</li>
+            </ul>
+            <div className="datavita-dashboard-cta">
+              <button onClick={() => handleProtectedNavigation("/dashboard")} className="datavita-btn datavita-btn-primary">
+                Explore Dashboards
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
           {/* Playground Section */}
           <section id="playground-section" className="datavita-playground-section">

@@ -1,377 +1,2151 @@
-/* Theme Variables */
-:root {
-  /* Base HSL values */
-  --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
+/* ============================================================================
+   PLAYGROUND CSS - ENHANCED VERSION
+   
+   TABLE OF CONTENTS:
+   1. Theme Variables & Color System
+   2. Base & Typography
+   3. Layout Components
+   4. UI Components
+   5. Editor & Code Components
+   6. Terminal & Console
+   7. Utility Classes
+   8. Animations
+   9. Responsive Styles
+   ============================================================================ */
 
-  /* Card and Popover */
-  --card: 0 0% 98%;
-  --card-foreground: 0 0% 10%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10%;
+/* ============================================================================
+   1. THEME VARIABLES & COLOR SYSTEM
+   ============================================================================ */
 
-  /* Primary and Secondary */
-  --secondary: 0 0% 92%;
-  --secondary-foreground: 0 0% 15%;
+   :root {
+    /* Color System - HSL format for better manipulation */
+    --hue-primary: 221;
+    --saturation-primary: 83%;
+    --lightness-primary: 53%;
+  
+    --hue-neutral: 0;
+    --saturation-neutral: 0%;
+  
+    /* Base Colors */
+    --background: var(--hue-neutral) var(--saturation-neutral) 100%;
+    --foreground: var(--hue-neutral) var(--saturation-neutral) 10%;
+  
+    /* Component Colors */
+    --card: var(--hue-neutral) var(--saturation-neutral) 98%;
+    --card-foreground: var(--hue-neutral) var(--saturation-neutral) 10%;
+    --popover: var(--hue-neutral) var(--saturation-neutral) 100%;
+    --popover-foreground: var(--hue-neutral) var(--saturation-neutral) 10%;
+  
+    /* Primary & Secondary */
+    --secondary: var(--hue-neutral) var(--saturation-neutral) 92%;
+    --secondary-foreground: var(--hue-neutral) var(--saturation-neutral) 15%;
+  
+    /* Status Colors */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    --info: var(--primary);
+    --info-foreground: var(--primary-foreground);
+  
+    /* UI Colors */
+    --muted: var(--hue-neutral) var(--saturation-neutral) 92%;
+    --muted-foreground: var(--hue-neutral) var(--saturation-neutral) 40%;
+    --accent: var(--primary);
+    --accent-foreground: var(--primary-foreground);
+    --border: var(--hue-neutral) var(--saturation-neutral) 88%;
+    --input: var(--hue-neutral) var(--saturation-neutral) 88%;
+    --ring: var(--primary);
+  
+    /* Terminal Colors */
+    --terminal-bg: var(--hue-neutral) var(--saturation-neutral) 10%;
+    --terminal-text: var(--hue-neutral) var(--saturation-neutral) 98%;
+    --terminal-header-bg: var(--hue-neutral) var(--saturation-neutral) 15%;
+  
+    /* Syntax Highlighting */
+    --syntax-comment: 215 9% 45%;
+    --syntax-punctuation: 229 16% 45%;
+    --syntax-property: 35 57% 47%;
+    --syntax-string: 178 51% 44%;
+    --syntax-operator: 187 50% 55%;
+    --syntax-keyword: 298 100% 43%;
+    --syntax-function: 273 47% 50%;
+    --syntax-variable: 24 89% 47%;
+  
+    /* Sizing & Spacing */
+    --radius-sm: 0.25rem;
+    --radius: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+  
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+  
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+    /* Z-index layers */
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-fixed: 30;
+    --z-modal: 40;
+    --z-popover: 50;
+    --z-tooltip: 60;
+    --z-fullscreen: 9999;
+  }
+  
+  /* Dark Theme */
+  [data-theme="dark"] {
+    /* Base Colors - Dark */
+    --background: var(--hue-neutral) var(--saturation-neutral) 8%;
+    --foreground: var(--hue-neutral) var(--saturation-neutral) 98%;
+  
+    /* Component Colors - Dark */
+    --card: var(--hue-neutral) var(--saturation-neutral) 10%;
+    --card-foreground: var(--hue-neutral) var(--saturation-neutral) 98%;
+    --popover: var(--hue-neutral) var(--saturation-neutral) 10%;
+    --popover-foreground: var(--hue-neutral) var(--saturation-neutral) 98%;
+  
+    /* UI Colors - Dark */
+    --secondary: var(--hue-neutral) var(--saturation-neutral) 15%;
+    --secondary-foreground: var(--hue-neutral) var(--saturation-neutral) 98%;
+    --muted: var(--hue-neutral) var(--saturation-neutral) 15%;
+    --muted-foreground: var(--hue-neutral) var(--saturation-neutral) 65%;
+    --border: var(--hue-neutral) var(--saturation-neutral) 20%;
+    --input: var(--hue-neutral) var(--saturation-neutral) 20%;
+  
+    /* Syntax Highlighting - Dark */
+    --syntax-comment: 222 14% 47%;
+    --syntax-punctuation: 228 21% 62%;
+    --syntax-property: 32 59% 61%;
+    --syntax-string: 92 47% 62%;
+    --syntax-operator: 187 50% 55%;
+    --syntax-keyword: 286 59% 67%;
+    --syntax-function: 207 90% 66%;
+    --syntax-variable: 355 65% 65%;
+  
+    /* Shadows - Dark */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Light and Dark Theme Classes */
+  .light {
+    --background: var(--hue-neutral) var(--saturation-neutral) 100%;
+    --foreground: var(--hue-neutral) var(--saturation-neutral) 10%;
+  }
+  
+  .dark {
+    --background: var(--hue-neutral) var(--saturation-neutral) 8%;
+    --foreground: var(--hue-neutral) var(--saturation-neutral) 98%;
+  }
+  
+  /* ============================================================================
+     2. BASE & TYPOGRAPHY
+     ============================================================================ */
+  
+  /* Base Styles */
+  .playgroundContainer {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  /* Typography */
+  .playgroundTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+  
+  .fileManagerTitle,
+  .previewTitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+  }
+  
+  .editorFileName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+  }
+  
+  /* ============================================================================
+     3. LAYOUT COMPONENTS
+     ============================================================================ */
+  
+  /* Header */
+  .playgroundHeader {
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: hsl(var(--background));
+    z-index: var(--z-sticky);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .headerTabs {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .headerActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* Main Content */
+  .mainContent {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    background-color: hsl(var(--background));
+    position: relative;
+  }
+  
+  .mainContent.horizontal {
+    flex-direction: row;
+  }
+  
+  .mainContent.vertical {
+    flex-direction: column;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 300px;
+    border-right: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    display: flex;
+    z-index: var(--z-sticky);
+    transition: transform 0.3s ease, width 0.3s ease;
+  }
+  
+  .sidebarTabs {
+    width: 48px;
+    border-right: 1px solid hsl(var(--border));
+    background-color: hsl(var(--muted));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: var(--space-2);
+  }
+  
+  .sidebarContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  /* Files Panel */
+  .filesPanel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .fileManagerHeader {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: hsl(var(--card));
+  }
+  
+  .fileManagerActions {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .fileList {
+    flex: 1;
+    overflow: auto;
+    padding: var(--space-2);
+  }
+  
+  /* Editor Section */
+  .editorSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(var(--card));
+    min-width: 300px;
+    position: relative;
+    transition: flex 0.3s ease;
+  }
+  
+  .editorHeader {
+    padding: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: hsl(var(--muted));
+    z-index: 2;
+  }
+  
+  .editorFileInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  
+  .editorActions {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .monacoEditorContainer {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Editor Tabs */
+  .editorTabs {
+    display: flex;
+    overflow-x: auto;
+    background-color: hsl(var(--muted));
+    border-bottom: 1px solid hsl(var(--border));
+    height: 36px;
+    padding-left: var(--space-2);
+    scrollbar-width: thin;
+  }
+  
+  .editorTabs::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .editorTabs::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .editorTabs::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 2px;
+  }
+  
+  .editorTab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.75rem;
+    height: 100%;
+    min-width: 120px;
+    max-width: 200px;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border-right: 1px solid hsl(var(--border));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .editorTab.active {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-top: 2px solid hsl(var(--accent));
+  }
+  
+  .editorTabContent {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    overflow: hidden;
+    flex: 1;
+  }
+  
+  .editorTabName {
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .editorTabClose {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 0.25rem;
+    opacity: 0.7;
+  }
+  
+  .editorTabClose:hover {
+    background-color: hsl(var(--destructive) / 0.1);
+    color: hsl(var(--destructive));
+    opacity: 1;
+  }
+  
+  /* Preview Section */
+  .previewSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    min-width: 300px;
+    overflow: hidden;
+    transition: flex 0.3s ease;
+  }
+  
+  .previewHeader {
+    padding: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: hsl(var(--muted));
+  }
+  
+  .previewActions {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .previewContent {
+    flex: 1;
+    overflow: hidden;
+    background-color: white; /* Always white for preview */
+    position: relative;
+  }
+  
+  .previewFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: white;
+  }
+  
+  /* Bottom Panel */
+  .bottomPanel {
+    height: 30%;
+    border-top: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    display: flex;
+    flex-direction: column;
+    transition: height 0.3s ease;
+  }
+  
+  .bottomPanel.collapsed {
+    height: 2.5rem;
+  }
+  
+  .bottomPanelHeader {
+    padding: 0 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: hsl(var(--muted));
+    height: 2.5rem;
+  }
+  
+  .bottomPanelTabs {
+    display: flex;
+    height: 100%;
+  }
+  
+  .bottomPanelContent {
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  /* Status Bar */
+  .statusBar {
+    height: 1.5rem;
+    border-top: 1px solid hsl(var(--border));
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .statusLeft,
+  .statusRight {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .statusItem {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .statusError {
+    color: hsl(var(--destructive));
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  /* ============================================================================
+     4. UI COMPONENTS
+     ============================================================================ */
+  
+  /* Buttons */
+  .tabButton {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    background-color: transparent;
+    color: hsl(var(--muted-foreground));
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .tabButton:hover {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  
+  .tabButton.active {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .sidebarTab {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    background-color: transparent;
+    color: hsl(var(--muted-foreground));
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: var(--space-2);
+  }
+  
+  .sidebarTab:hover {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  
+  .sidebarTab.active {
+    background-color: hsl(var(--accent) / 0.2);
+    color: hsl(var(--accent));
+  }
+  
+  .bottomPanelTab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 1rem;
+    height: 100%;
+    background-color: transparent;
+    color: hsl(var(--muted-foreground));
+    border: none;
+    border-right: 1px solid hsl(var(--border));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    position: relative;
+  }
+  
+  .bottomPanelTab:hover {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  
+  .bottomPanelTab.active {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-top: 2px solid hsl(var(--primary));
+  }
+  
+  .iconButton {
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    background-color: transparent;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .iconButton:hover {
+    background-color: hsl(var(--accent) / 0.1);
+    color: hsl(var(--accent));
+  }
+  
+  .iconButton:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
+  }
+  
+  .iconButton.active {
+    color: hsl(var(--accent));
+    background-color: hsl(var(--accent) / 0.1);
+  }
+  
+  .iconButton.processing {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .newFileButton {
+    flex: 1;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    border: none;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .newFileButton:last-child {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  
+  .newFileButton:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  .newFileButton:active {
+    transform: translateY(0);
+  }
+  
+  .createFileButton {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+  
+  .createFileButton:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .createFileButton:active {
+    transform: translateY(0);
+  }
+  
+  /* Badges */
+  .tabBadge {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    min-width: 1rem;
+    height: 1rem;
+    border-radius: 0.5rem;
+    background-color: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.25rem;
+  }
+  
+  .editorFileType {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    background-color: hsl(var(--accent) / 0.1);
+    border-radius: var(--radius);
+  }
+  
+  .errorCount {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: hsl(var(--destructive));
+    padding: 0.125rem 0.375rem;
+    background-color: hsl(var(--destructive) / 0.1);
+    border-radius: var(--radius);
+  }
+  
+  .packageVersion {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted));
+    padding: 0.125rem 0.375rem;
+    border-radius: 1rem;
+    margin-left: var(--space-2);
+  }
+  
+  .packageType {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 1rem;
+  }
+  
+  .packageType.dependency {
+    background-color: hsl(var(--info) / 0.2);
+    color: hsl(var(--info));
+  }
+  
+  .packageType.devDependency {
+    background-color: hsl(var(--warning) / 0.2);
+    color: hsl(var(--warning));
+  }
+  
+  .unsavedBadge {
+    color: hsl(var(--warning));
+    font-size: 1.25rem;
+    line-height: 1;
+    margin-left: 0.25rem;
+  }
+  
+  /* Inputs */
+  .newFileInput,
+  .newFileSelect,
+  .packageSearchInput {
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .newFileInput:focus,
+  .newFileSelect:focus,
+  .packageSearchInput:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+  
+  /* File Tree */
+  .fileTreeItem {
+    margin-bottom: 0.25rem;
+  }
+  
+  .fileTreeItemHeader {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem var(--space-2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .fileTreeItemHeader:hover {
+    background-color: hsl(var(--accent) / 0.1);
+  }
+  
+  .fileTreeItem.active .fileTreeItemHeader,
+  .fileTreeItemHeader.selected {
+    background-color: hsl(var(--accent) / 0.2);
+    color: hsl(var(--accent));
+  }
+  
+  .fileTreeItemIcon {
+    display: flex;
+    align-items: center;
+    margin-right: var(--space-2);
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .fileTreeItemName {
+    flex: 1;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .fileTreeChildren {
+    padding-left: 1.5rem;
+  }
+  
+  /* File Item */
+  .fileItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: hsl(var(--foreground));
+    margin-bottom: 0.25rem;
+  }
+  
+  .fileItem:hover {
+    background-color: hsl(var(--accent) / 0.1);
+  }
+  
+  .fileItem.active {
+    background-color: hsl(var(--accent) / 0.2);
+    color: hsl(var(--accent));
+  }
+  
+  .fileItemContent {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+  }
+  
+  .fileName {
+    font-size: 0.875rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .fileDeleteButton {
+    opacity: 0;
+    background: transparent;
+    border: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+  }
+  
+  .fileItem:hover .fileDeleteButton {
+    opacity: 1;
+  }
+  
+  .fileDeleteButton:hover {
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.1);
+  }
+  
+  /* Context Menu */
+  .contextMenu {
+    position: fixed;
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    z-index: var(--z-popover);
+    min-width: 180px;
+    overflow: hidden;
+    animation: fadeIn 0.1s ease-out;
+  }
+  
+  .contextMenuItem {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  
+  .contextMenuItem:hover {
+    background-color: hsl(var(--accent) / 0.1);
+    color: hsl(var(--accent));
+  }
+  
+  /* New File Form */
+  .newFileForm {
+    padding: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .newFileActions {
+    display: flex;
+    gap: var(--space-2);
+  }
+  
+  /* Package Installer */
+  .packagesPanel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .packageInstallerContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0.75rem;
+  }
+  
+  .packageSearch {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  
+  .packageSearchIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .packageSearchInput {
+    width: 100%;
+    padding: 0.5rem 0.5rem 0.5rem 2.25rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+  }
+  
+  .packageSectionTitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: hsl(var(--foreground));
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  
+  .searchResults,
+  .popularPackages {
+    margin-bottom: 1.5rem;
+  }
+  
+  .packageList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  
+  .packageList::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .packageList::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .packageList::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  
+  .packageItem {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .packageItem:hover {
+    border-color: hsl(var(--accent) / 0.5);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .packageInfo {
+    flex: 1;
+  }
+  
+  .packageHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+  
+  .packageName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+  }
+  
+  .packageLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: var(--space-2);
+    color: hsl(var(--accent));
+    transition: all 0.2s ease;
+  }
+  
+  .packageLink:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  
+  .packageDescription {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    margin-bottom: var(--space-2);
+  }
+  
+  .packageTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .packageTag {
+    font-size: 0.65rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 1rem;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .packageActions {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .packageInstallButton,
+  .packageDevInstallButton {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius);
+    border: none;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .packageInstallButton {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .packageDevInstallButton {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  
+  .packageInstallButton:hover,
+  .packageDevInstallButton:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  .packageInstallButton:active,
+  .packageDevInstallButton:active {
+    transform: translateY(0);
+  }
+  
+  .packageInstallButton:disabled,
+  .packageDevInstallButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .installedPackages {
+    flex: 1;
+    overflow: auto;
+  }
+  
+  .installedPackageList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .installedPackageItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    transition: border-color 0.2s ease;
+  }
+  
+  .installedPackageItem:hover {
+    border-color: hsl(var(--accent) / 0.3);
+  }
+  
+  .installedPackageInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  
+  .installedPackageName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+  }
+  
+  .installedPackageVersion {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .packageUninstallButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius);
+    border: none;
+    background-color: hsl(var(--destructive) / 0.1);
+    color: hsl(var(--destructive));
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .packageUninstallButton:hover {
+    background-color: hsl(var(--destructive) / 0.2);
+    transform: scale(1.05);
+  }
+  
+  /* ============================================================================
+     5. EDITOR & CODE COMPONENTS
+     ============================================================================ */
+  
+  /* No file selected state */
+  .noFileSelected {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 1rem;
+    color: hsl(var(--muted-foreground));
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  /* Preview Error */
+  .previewError {
+    padding: 1rem;
+    background-color: hsl(var(--destructive) / 0.1);
+    color: hsl(var(--destructive));
+    border-radius: var(--radius);
+    margin: 1rem;
+    overflow: auto;
+    border-left: 4px solid hsl(var(--destructive));
+  }
+  
+  .previewError h3 {
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+  }
+  
+  .previewError pre {
+    font-family: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
+    font-size: 0.875rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background-color: hsl(var(--card));
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    margin-top: var(--space-2);
+  }
+  
+  /* Full Screen Preview */
+  .fullScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: var(--z-fullscreen);
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  .fullScreen .previewHeader {
+    background-color: hsl(var(--background));
+    width: 100%;
+    padding: var(--space-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .fullScreen .previewContent {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .fullScreen .previewFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: white;
+  }
+  
+  /* Preview Navigation */
+  .previewNavigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    padding: 10px 15px;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .previewNavigationLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .previewNavigationSelect {
+    background-color: hsl(var(--input));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .previewNavigationSelect:hover {
+    border-color: hsl(var(--accent));
+  }
+  
+  .previewNavigationSelect:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 5px hsl(var(--ring));
+  }
+  
+  .previewNavigationSelect option {
+    background-color: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+  }
+  
+  /* Monaco Editor Specific Styles */
+  .monaco-editor .margin {
+    background-color: hsl(var(--card));
+  }
+  
+  .monaco-editor .monaco-editor-background {
+    background-color: hsl(var(--card));
+  }
+  
+  .monaco-editor .line-numbers {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .monaco-editor .current-line {
+    border: none;
+    background-color: hsl(var(--accent) / 0.05);
+  }
+  
+  .monaco-editor .view-overlays .current-line {
+    border: none;
+    background-color: hsl(var(--accent) / 0.05);
+  }
+  
+  .monaco-editor .margin-view-overlays .current-line-margin {
+    border: none;
+    background-color: hsl(var(--accent) / 0.05);
+  }
+  
+  /* ============================================================================
+     6. TERMINAL & CONSOLE
+     ============================================================================ */
+  
+  /* Console Panel */
+  .consolePanel {
+    height: 100%;
+    overflow: auto;
+    padding: 0.75rem;
+    font-family: ui-monospace, Menlo, Monaco, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    background-color: hsl(var(--terminal-bg));
+    color: hsl(var(--terminal-text));
+  }
+  
+  /* Empty Console State */
+  .emptyConsole,
+  .emptyErrorPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  /* Console Output Types */
+  .output {
+    margin-bottom: var(--space-2);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  
+  .timestamp {
+    color: hsl(var(--muted-foreground));
+    margin-right: var(--space-2);
+    font-size: 0.75rem;
+  }
+  
+  .logMessage {
+    font-family: ui-monospace, Menlo, Monaco, monospace;
+  }
+  
+  .error {
+    color: hsl(var(--destructive));
+  }
+  
+  .warning {
+    color: hsl(var(--warning));
+  }
+  
+  .info {
+    color: hsl(var(--info));
+  }
+  
+  .success {
+    color: hsl(var(--success));
+  }
+  
+  .log {
+    color: hsl(var(--terminal-text));
+  }
+  
+  /* Terminal Panel */
+  .terminalPanel {
+    height: 100%;
+    background-color: hsl(var(--terminal-bg));
+    color: hsl(var(--terminal-text));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .terminalContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .terminalOutput {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+    font-family: ui-monospace, Menlo, Monaco, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  .terminalWelcome {
+    color: hsl(var(--info));
+    margin-bottom: 1rem;
+  }
+  
+  .terminalForm {
+    display: flex;
+    align-items: center;
+    background-color: hsl(0, 0%, 10%);
+    padding: 10px;
+    border-radius: var(--radius);
+    border: 1px solid hsl(0, 0%, 20%);
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+  
+  .terminalPrompt {
+    color: hsl(120, 100%, 50%);
+    font-weight: bold;
+    margin-right: 8px;
+    font-family: "Courier New", monospace;
+  }
+  
+  .terminalInput {
+    flex: 1;
+    font-size: 16px;
+    color: hsl(120, 100%, 50%);
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-family: "Courier New", monospace;
+    caret-color: hsl(120, 100%, 50%);
+  }
+  
+  .terminalInput::placeholder {
+    color: hsla(120, 100%, 50%, 0.5);
+  }
+  
+  .terminalInput:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* Terminal Entry Styles */
+  .terminalEntry {
+    margin-bottom: var(--space-2);
+  }
+  
+  .terminalCommand {
+    display: flex;
+    align-items: center;
+    color: hsl(120, 100%, 50%);
+  }
+  
+  .terminalCommandText {
+    margin-left: var(--space-2);
+  }
+  
+  /* Problems Panel */
+  .problemsPanel {
+    height: 100%;
+    overflow: auto;
+    padding: 0.75rem;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+  }
+  
+  .errorPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: var(--space-2);
+  }
+  
+  .errorItem {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background-color: hsl(var(--destructive) / 0.05);
+    border-left: 3px solid hsl(var(--destructive));
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .errorItem:hover {
+    background-color: hsl(var(--destructive) / 0.1);
+  }
+  
+  .errorHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin-bottom: 0.25rem;
+  }
+  
+  .errorIcon {
+    color: hsl(var(--destructive));
+    margin-top: 0.125rem;
+  }
+  
+  .errorMessage {
+    font-weight: 500;
+    color: hsl(var(--destructive));
+    flex: 1;
+  }
+  
+  .errorLocation {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin-left: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .errorStack {
+    font-family: ui-monospace, Menlo, Monaco, monospace;
+    font-size: 0.75rem;
+    background-color: hsl(var(--muted));
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    margin-top: var(--space-2);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow: auto;
+  }
+  
+  /* ============================================================================
+     7. UTILITY CLASSES
+     ============================================================================ */
+  
+  /* Empty State */
+  .emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: hsl(var(--muted-foreground));
+    gap: 0.75rem;
+    text-align: center;
+  }
+  
+  /* Visibility Classes */
+  .visible {
+    display: flex;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  /* File Upload */
+  .fileUploadForm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: hsl(0, 0%, 10%);
+    padding: 8px;
+    border-radius: var(--radius);
+    border: 1px solid hsl(0, 0%, 18%);
+    max-width: 100%;
+  }
+  
+  .fileUploadInput {
+    display: none;
+  }
+  
+  .fileUploadLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: hsl(0, 0%, 15%);
+    color: hsl(0, 0%, 88%);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    white-space: nowrap;
+  }
+  
+  .fileUploadLabel:hover {
+    background-color: hsl(0, 0%, 20%);
+  }
+  
+  .fileUploadButton {
+    background-color: hsl(0, 0%, 27%);
+    color: hsl(0, 0%, 88%);
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .fileUploadButton:disabled {
+    background-color: hsl(0, 0%, 18%);
+    color: hsl(0, 0%, 53%);
+    cursor: not-allowed;
+  }
+  
+  .fileUploadButton:hover:not(:disabled) {
+    background-color: hsl(0, 0%, 33%);
+  }
+  
+  /* Project Info */
+  .currentProjectInfo {
+    background-color: hsl(0, 0%, 10%);
+    color: hsl(0, 0%, 88%);
+    padding: 10px;
+    border-radius: var(--radius);
+    border: 1px solid hsl(0, 0%, 18%);
+    max-width: 300px;
+    text-align: center;
+    font-size: 13px;
+  }
+  
+  .currentProjectName {
+    font-size: 14px;
+    font-weight: 600;
+    color: hsl(0, 0%, 94%);
+    margin-bottom: 4px;
+  }
+  
+  .currentProjectDescription {
+    font-size: 12px;
+    color: hsl(0, 0%, 65%);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  
+  .projectTypeTag {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background-color: hsl(0, 0%, 15%);
+    color: hsl(0, 0%, 75%);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    user-select: none;
+    margin: 0 auto;
+  }
+  
+  .backToProjectsButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: hsl(0, 0%, 20%);
+    color: hsl(0, 0%, 96%);
+    border: 1px solid hsl(0, 0%, 33%);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .backToProjectsButton:hover {
+    background-color: hsl(0, 0%, 25%);
+  }
+  
+  .backToProjectsButton:active {
+    transform: scale(0.98);
+  }
+  
+  .backToProjectsButton svg {
+    stroke-width: 2;
+    color: hsl(0, 0%, 73%);
+  }
+  
+  /* Deleted Files */
+  .deletedFile {
+    opacity: 0.7;
+    position: relative;
+  }
+  
+  .deletedFile::after {
+    content: "(deleted)";
+    font-size: 0.7rem;
+    color: hsl(var(--destructive));
+    margin-left: var(--space-2);
+  }
+  
+  .editorTab.deletedFile .editorTabName {
+    text-decoration: line-through;
+    text-decoration-color: hsl(var(--destructive));
+    text-decoration-thickness: 1px;
+  }
+  
+  .monacoEditorContainer.deletedFile::before {
+    content: "This file has been deleted from the project but is still open for editing";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: hsl(var(--destructive) / 0.1);
+    color: hsl(var(--destructive));
+    padding: var(--space-2);
+    font-size: 0.8rem;
+    z-index: 10;
+    text-align: center;
+  }
+  
+  /* ============================================================================
+     8. ANIMATIONS
+     ============================================================================ */
+  
+  .spinning {
+    animation: spin 1.5s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* ============================================================================
+     9. RESPONSIVE STYLES
+     ============================================================================ */
+  
+  /* Scrollbars */
+  .fileList::-webkit-scrollbar,
+  .consolePanel::-webkit-scrollbar,
+  .terminalOutput::-webkit-scrollbar,
+  .packageList::-webkit-scrollbar,
+  .errorStack::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .fileList::-webkit-scrollbar-track,
+  .consolePanel::-webkit-scrollbar-track,
+  .terminalOutput::-webkit-scrollbar-track,
+  .packageList::-webkit-scrollbar-track,
+  .errorStack::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .fileList::-webkit-scrollbar-thumb,
+  .consolePanel::-webkit-scrollbar-thumb,
+  .terminalOutput::-webkit-scrollbar-thumb,
+  .packageList::-webkit-scrollbar-thumb,
+  .errorStack::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+  
+  .fileList::-webkit-scrollbar-thumb:hover,
+  .consolePanel::-webkit-scrollbar-thumb:hover,
+  .terminalOutput::-webkit-scrollbar-thumb:hover,
+  .packageList::-webkit-scrollbar-thumb:hover,
+  .errorStack::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: absolute;
+      top: 3.5rem;
+      bottom: 0;
+      left: 0;
+      z-index: var(--z-fixed);
+      width: 80%;
+      max-width: 300px;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      box-shadow: var(--shadow-lg);
+    }
+  
+    .sidebar.open {
+      transform: translateX(0);
+    }
+  
+    .mainContent.vertical {
+      flex-direction: column;
+    }
+  
+    .bottomPanel {
+      height: 40%;
+    }
+  
+    .headerTabs {
+      display: none;
+    }
+  
+    .editorTabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  
+    .editorTab {
+      min-width: 100px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .playgroundHeader {
+      padding: 0.5rem;
+    }
+  
+    .headerLeft {
+      gap: 0.5rem;
+    }
+  
+    .playgroundTitle {
+      font-size: 1rem;
+    }
+  
+    .editorTab {
+      min-width: 80px;
+      padding: 0 0.5rem;
+    }
+  
+    .bottomPanelTab {
+      padding: 0 0.5rem;
+    }
+  }
+  
+  
+/* ============================================================================
+   EDITOR ENHANCEMENTS
+   These styles extend the existing playground.module.css file
+   ============================================================================ */
 
-  /* Destructive */
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-
-  /* Muted and Accent */
-  --muted: 0 0% 92%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 221 83% 53%;
-  --accent-foreground: 0 0% 98%;
-
-  /* Utility Colors */
-  --border: 0 0% 88%;
-  --input: 0 0% 88%;
-  --ring: 221 83% 53%;
-
-  /* Terminal Colors */
-  --terminal-bg: 0 0% 10%;
-  --terminal-text: 0 0% 98%;
-  --terminal-header-bg: 0 0% 15%;
-
-  /* Syntax Highlighting */
-  --syntax-comment: 215 9% 45%;
-  --syntax-punctuation: 229 16% 45%;
-  --syntax-property: 35 57% 47%;
-  --syntax-string: 178 51% 44%;
-  --syntax-operator: 187 50% 55%;
-  --syntax-keyword: 298 100% 43%;
-  --syntax-function: 273 47% 50%;
-  --syntax-variable: 24 89% 47%;
-
-  /* Status Colors */
-  --error: 0 84.2% 60.2%;
-  --warning: 38 92% 50%;
-  --success: 142 76% 36%;
-  --info: 221 83% 53%;
-
-  /* Border Radius */
-  --radius: 0.5rem;
-}
-
-/* Dark Theme */
-[data-theme="dark"] {
-  --background: 0 0% 8%;
-  --foreground: 0 0% 98%;
-
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 98%;
-
-  --primary: 221 83% 53%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 98%;
-
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 65%;
-  --accent: 221 83% 53%;
-  --accent-foreground: 0 0% 98%;
-
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 221 83% 53%;
-
-  /* Syntax Highlighting - Dark */
-  --syntax-comment: 222 14% 47%;
-  --syntax-punctuation: 228 21% 62%;
-  --syntax-property: 32 59% 61%;
-  --syntax-string: 92 47% 62%;
-  --syntax-operator: 187 50% 55%;
-  --syntax-keyword: 286 59% 67%;
-  --syntax-function: 207 90% 66%;
-  --syntax-variable: 355 65% 65%;
-}
-
-/* Playground Container */
-.playgroundContainer {
-  height: 100vh;
+/* Split Editor Views */
+.splitEditorContainer {
   display: flex;
-  flex-direction: column;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-    sans-serif;
+  width: 100%;
+  height: 100%;
 }
 
-/* Light and Dark Theme Classes */
-.light {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
-}
-
-.dark {
-  --background: 0 0% 8%;
-  --foreground: 0 0% 98%;
-}
-
-/* Header */
-.playgroundHeader {
-  border-bottom: 1px solid hsl(var(--border));
-  padding: 0.75rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: hsl(var(--background));
-  z-index: 10;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.playgroundTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: hsl(var(--foreground));
-  margin: 0;
-}
-
-.headerTabs {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.tabButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  background-color: transparent;
-  color: hsl(var(--muted-foreground));
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.tabButton:hover {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-}
-
-.tabButton.active {
-  background-color: hsl(180, 1%, 25%);
-  color: hsl(var(--primary-foreground));
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Main Content */
-.mainContent {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  background-color: hsl(var(--background));
-}
-
-.mainContent.horizontal {
+.splitEditorContainer.vertical {
   flex-direction: row;
 }
 
-.mainContent.vertical {
+.splitEditorContainer.horizontal {
   flex-direction: column;
 }
 
-/* Sidebar */
-.sidebar {
+.primaryEditor,
+.secondaryEditor {
+  position: relative;
+  overflow: hidden;
+}
+
+.splitEditorContainer.vertical .primaryEditor,
+.splitEditorContainer.vertical .secondaryEditor {
+  width: 50%;
+  height: 100%;
+}
+
+.splitEditorContainer.horizontal .primaryEditor,
+.splitEditorContainer.horizontal .secondaryEditor {
+  width: 100%;
+  height: 50%;
+}
+
+/* Resizer handle */
+.resizer {
+  background-color: hsl(var(--border));
+  position: relative;
+  z-index: 10;
+}
+
+.splitEditorContainer.vertical .resizer {
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.splitEditorContainer.horizontal .resizer {
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+}
+
+.resizer:hover {
+  background-color: hsl(var(--accent));
+}
+
+/* Zen Mode */
+.zenModeContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: var(--z-fullscreen);
+  background-color: hsl(var(--background));
+  display: flex;
+  flex-direction: column;
+}
+
+.zenMode {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Editor Container */
+.editorContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.monacoEditorContainer {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Search Panel */
+.searchPanel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   width: 300px;
-  border-right: 1px solid hsl(var(--border));
   background-color: hsl(var(--card));
-  display: flex;
-  z-index: 5;
-}
-
-.sidebarTabs {
-  width: 48px;
-  border-right: 1px solid hsl(var(--border));
-  background-color: hsl(var(--muted));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 0.5rem;
-}
-
-.sidebarTab {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
-  background-color: transparent;
-  color: hsl(var(--muted-foreground));
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 0.5rem;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  animation: slideIn 0.2s ease-out;
 }
 
-.sidebarTab:hover {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-}
-
-.sidebarTab.active {
-  background-color: hsl(var(--accent) / 0.2);
-  color: hsl(var(--accent));
-}
-
-.sidebarContent {
-  flex: 1;
+.searchPanelHeader {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Files Panel */
-.filesPanel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.fileManagerHeader {
-  padding: 0.75rem 1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
   border-bottom: 1px solid hsl(var(--border));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: hsl(var(--card));
 }
 
-.fileManagerTitle {
-  font-size: 0.875rem;
+.searchPanelHeader h3 {
+  margin: 0;
+  font-size: 14px;
   font-weight: 500;
-  color: hsl(var(--foreground));
 }
 
-.fileManagerActions {
+.searchForm {
+  padding: 12px;
   display: flex;
-  gap: 0.25rem;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.fileList {
-  flex: 1;
-  overflow: auto;
-  padding: 0.5rem;
+.searchInputGroup {
+  position: relative;
 }
 
-/* File Tree */
-.fileTreeItem {
-  margin-bottom: 0.25rem;
+.searchIcon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: hsl(var(--muted-foreground));
 }
 
-.fileTreeItemHeader {
+.searchInput {
+  width: 100%;
+  padding: 6px 6px 6px 30px;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+.searchOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.searchOption {
   display: flex;
   align-items: center;
-  padding: 0.375rem 0.5rem;
+  gap: 4px;
+  font-size: 12px;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
+
+.searchActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.searchButton {
+  padding: 6px 12px;
   border-radius: var(--radius);
+  border: none;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.fileTreeItemHeader:hover {
-  background-color: hsl(var(--accent) / 0.1);
+.searchButton:hover {
+  opacity: 0.9;
 }
 
-.fileTreeItem.active .fileTreeItemHeader {
-  background-color: hsl(var(--accent) / 0.2);
-  color: hsl(var(--accent));
+.searchButton:active {
+  transform: translateY(1px);
 }
 
-.fileTreeItemIcon {
+/* Breadcrumbs */
+.breadcrumbs {
   display: flex;
   align-items: center;
-  margin-right: 0.5rem;
-  color: hsl(var(--muted-foreground));
-}
-
-.fileTreeItemName {
-  flex: 1;
-  font-size: 0.875rem;
-  white-space: nowrap;
+  flex-wrap: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 300px;
+  margin-right: 8px;
 }
 
-.fileTreeChildren {
-  padding-left: 1.5rem;
+.breadcrumbItem {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
-/* File Item */
-.fileItem {
+.breadcrumbLink {
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: color 0.2s ease;
+  font-size: 12px;
+}
+
+.breadcrumbLink:hover {
+  color: hsl(var(--accent));
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  margin: 0 4px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+.breadcrumbCurrent {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* Status Bar */
+.statusBar {
+  height: 22px;
+  border-top: 1px solid hsl(var(--border));
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: hsl(var(--foreground));
-  margin-bottom: 0.25rem;
+  padding: 0 8px;
+  font-size: 12px;
 }
 
-.fileItem:hover {
-  background-color: hsl(var(--accent) / 0.1);
-}
-
-.fileItem.active {
-  background-color: hsl(var(--accent) / 0.2);
-  color: hsl(var(--accent));
-}
-
-.fileItemContent {
+.statusLeft,
+.statusRight {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex: 1;
+  gap: 12px;
 }
 
-.fileName {
-  font-size: 0.875rem;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.statusItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.fileDeleteButton {
-  opacity: 0;
-  background: transparent;
-  border: none;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: var(--radius);
-  transition: all 0.2s ease;
-}
-
-.fileItem:hover .fileDeleteButton {
-  opacity: 1;
-}
-
-.fileDeleteButton:hover {
+.statusError {
   color: hsl(var(--destructive));
-  background-color: hsl(var(--destructive) / 0.1);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Context Menu */
@@ -380,17 +2154,21 @@
   background-color: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  min-width: 150px;
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-popover);
+  min-width: 180px;
   overflow: hidden;
+  animation: fadeIn 0.1s ease-out;
 }
 
 .contextMenuItem {
-  padding: 0.5rem 1rem;
+  padding: 8px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.875rem;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .contextMenuItem:hover {
@@ -398,1187 +2176,248 @@
   color: hsl(var(--accent));
 }
 
-/* New File Form */
-.newFileForm {
-  padding: 0.75rem;
-  border-bottom: 1px solid hsl(var(--border));
-  background-color: hsl(var(--card));
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.contextMenuDivider {
+  height: 1px;
+  background-color: hsl(var(--border));
+  margin: 4px 0;
 }
 
-.newFileInput {
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-size: 0.875rem;
+/* Tab Dragging */
+.draggingTab {
+  opacity: 0.6;
+  cursor: grabbing;
 }
 
-.newFileSelect {
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-size: 0.875rem;
-}
-
-.newFileActions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.newFileButton {
-  flex: 1;
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  border: none;
-  background-color: hsl(180, 1%, 25%);
-  color: hsl(var(--primary-foreground));
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.newFileButton:last-child {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-}
-
-.newFileButton:hover {
-  opacity: 0.9;
-}
-
-/* Package Installer */
-.packagesPanel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.packageInstallerContainer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 0.75rem;
-}
-
-.packageSearch {
+.dragOverTab {
+  background-color: hsl(var(--accent) / 0.2);
   position: relative;
-  margin-bottom: 1rem;
 }
 
-.packageSearchIcon {
+.dragOverTab::after {
+  content: "";
   position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: hsl(var(--muted-foreground));
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: hsl(var(--accent));
 }
 
-.packageSearchInput {
-  width: 100%;
-  padding: 0.5rem 0.5rem 0.5rem 2.25rem;
-  border-radius: var(--radius);
-  border: 1px solid hsl(var(--border));
+/* Rename Input */
+.renameInput {
   background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--ring));
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 13px;
   color: hsl(var(--foreground));
-  font-size: 0.875rem;
+  width: 100%;
+  max-width: 150px;
 }
 
-.packageSectionTitle {
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-  color: hsl(var(--foreground));
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.renameInput:focus {
+  outline: none;
 }
 
-.searchResults {
-  margin-bottom: 1.5rem;
+/* Git Integration */
+.gitModified {
+  position: relative;
 }
 
-.popularPackages {
-  margin-bottom: 1.5rem;
-}
-
-.packageList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.packageItem {
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--card));
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.packageInfo {
-  flex: 1;
-}
-
-.packageHeader {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.25rem;
-}
-
-.packageName {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-}
-
-.packageVersion {
-  font-size: 0.75rem;
-  color: hsl(var(--muted-foreground));
-  background-color: hsl(var(--muted));
-  padding: 0.125rem 0.375rem;
-  border-radius: 1rem;
-  margin-left: 0.5rem;
-}
-
-.packageLink {
+.gitModified::after {
+  content: "M";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0.5rem;
-  color: hsl(var(--accent));
-  transition: all 0.2s ease;
-}
-
-.packageLink:hover {
-  opacity: 0.8;
-}
-
-.packageDescription {
-  font-size: 0.75rem;
-  color: hsl(var(--muted-foreground));
-  margin: 0;
-  margin-bottom: 0.5rem;
-}
-
-.packageTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-
-.packageTag {
-  font-size: 0.65rem;
-  padding: 0.125rem 0.375rem;
-  border-radius: 1rem;
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-}
-
-.packageActions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.packageInstallButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--radius);
-  border: none;
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.packageDevInstallButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.375rem 0.5rem;
-  border-radius: var(--radius);
-  border: none;
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.packageInstallButton:hover,
-.packageDevInstallButton:hover {
-  opacity: 0.9;
-}
-
-.packageInstallButton:disabled,
-.packageDevInstallButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.installedPackages {
-  flex: 1;
-  overflow: auto;
-}
-
-.installedPackageList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.installedPackageItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-}
-
-.installedPackageInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.installedPackageName {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-}
-
-.installedPackageVersion {
-  font-size: 0.75rem;
-  color: hsl(var(--muted-foreground));
-}
-
-.packageType {
-  font-size: 0.75rem;
-  padding: 0.125rem 0.375rem;
-  border-radius: 1rem;
-}
-
-.packageType.dependency {
-  background-color: hsl(var(--info) / 0.2);
-  color: hsl(var(--info));
-}
-
-.packageType.devDependency {
   background-color: hsl(var(--warning) / 0.2);
   color: hsl(var(--warning));
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: bold;
 }
 
-.packageUninstallButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius);
-  border: none;
-  background-color: hsl(var(--destructive) / 0.1);
-  color: hsl(var(--destructive));
-  cursor: pointer;
-  transition: all 0.2s ease;
+.gitAdded::after {
+  content: "A";
+  background-color: hsl(var(--success) / 0.2);
+  color: hsl(var(--success));
 }
 
-.packageUninstallButton:hover {
+.gitDeleted::after {
+  content: "D";
   background-color: hsl(var(--destructive) / 0.2);
-}
-
-.emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  color: hsl(var(--muted-foreground));
-  gap: 0.75rem;
-}
-
-/* Editor Section */
-.editorSection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: hsl(var(--card));
-  min-width: 300px;
-  position: relative;
-}
-
-.editorHeader {
-  padding: 0.75rem;
-  border-bottom: 1px solid hsl(var(--border));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: hsl(var(--muted));
-  z-index: 2;
-}
-
-.editorFileInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.editorFileName {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-}
-
-.editorFileType {
-  font-size: 0.75rem;
-  color: hsl(var(--muted-foreground));
-  text-transform: uppercase;
-  font-weight: 500;
-  padding: 0.125rem 0.375rem;
-  background-color: hsl(var(--accent) / 0.1);
-  border-radius: var(--radius);
-}
-
-.errorCount {
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius);
-  opacity: 0.1;
-}
-
-
-.errorCount {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: hsl(var(--error));
-  padding: 0.125rem 0.375rem;
-  background-color: hsl(var(--error) / 0.1);
-  border-radius: var(--radius);
-}
-
-.editorActions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-/* Monaco Editor Container */
-.monacoEditorContainer {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-
-/* No file selected state */
-.noFileSelected {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 1rem;
-  color: hsl(var(--muted-foreground));
-}
-
-.createFileButton {
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  background-color: hsl(180, 1%, 25%);
-  color: hsl(var(--primary-foreground));
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.createFileButton:hover {
-  opacity: 0.9;
-}
-
-/* Preview Section */
-.previewSection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-left: 1px solid hsl(var(--border));
-  background-color: hsl(var(--card));
-  min-width: 300px;
-  overflow: hidden;
-}
-
-.previewHeader {
-  padding: 0.75rem;
-  border-bottom: 1px solid hsl(var(--border));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: hsl(var(--muted));
-}
-
-.previewTitle {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.previewActions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.previewContent {
-  flex: 1;
-  overflow: hidden;
-  background-color: white; /* Always white for preview */
-  position: relative;
-}
-
-.previewFrame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background-color: white;
-}
-
-/* Preview Error */
-.previewError {
-  padding: 1rem;
-  background-color: hsl(var(--destructive) / 0.1);
   color: hsl(var(--destructive));
-  border-radius: var(--radius);
-  margin: 1rem;
-  overflow: auto;
 }
 
-.previewError h3 {
-  margin-bottom: 0.5rem;
-}
-
-.previewError pre {
-  font-family: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
-  font-size: 0.875rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* Full Screen Preview */
-.fullScreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 9999; /* Ensure it stays on top */
-  background-color: rgba(0, 0, 0, 0.8); /* Optional: Adds a slight overlay effect */
+/* Diff Viewer */
+.diffContainer {
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevents unwanted scrollbars */
-}
-
-.fullScreen .previewHeader {
-  background-color: hsl(var(--background));
-  width: 100%;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.fullScreen .previewContent {
-  flex-grow: 1;  /* Makes sure it takes all available space */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fullScreen .previewFrame {
-  width: 100%;
   height: 100%;
-  border: none;
-  background-color: white; /* Ensure a proper background */
 }
 
-.previewActions {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Adjust spacing between buttons */
-}
-
-/* Bottom Panel */
-.bottomPanel {
-  height: 30%;
-  border-top: 1px solid hsl(var(--border));
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  display: flex;
-  flex-direction: column;
-  transition: height 0.3s ease;
-}
-
-.bottomPanel.collapsed {
-  height: 2.5rem;
-}
-
-.bottomPanelHeader {
-  padding: 0 0.75rem;
+.diffHeader {
+  padding: 8px 12px;
   border-bottom: 1px solid hsl(var(--border));
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background-color: hsl(var(--muted));
-  height: 2.5rem;
-}
-
-.bottomPanelTabs {
-  display: flex;
-  height: 100%;
-}
-
-.bottomPanelTab {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0 1rem;
-  height: 100%;
-  background-color: transparent;
-  color: hsl(var(--muted-foreground));
-  border: none;
-  border-right: 1px solid hsl(var(--border));
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  position: relative;
 }
 
-.bottomPanelTab:hover {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
+.diffTitle {
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.bottomPanelTab.active {
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border-top: 2px solid hsl(var(--primary));
-}
-
-.tabBadge {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  min-width: 1rem;
-  height: 1rem;
-  border-radius: 0.5rem;
-  background-color: hsl(var(--error));
-  color: hsl(var(--error-foreground));
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0.25rem;
-}
-
-.bottomPanelActions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.bottomPanelContent {
+.diffContent {
   flex: 1;
+  display: flex;
   overflow: hidden;
 }
 
-/* Console Panel */
-.consolePanel {
+.diffLeft,
+.diffRight {
+  width: 50%;
   height: 100%;
-  overflow: auto;
-  padding: 0.75rem;
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  background-color: hsl(var(--terminal-bg));
-  color: hsl(var(--terminal-text));
+  overflow: hidden;
 }
 
-/* Empty Console State */
-.emptyConsole {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+.diffLeft {
+  border-right: 1px solid hsl(var(--border));
+}
+
+/* Code Lens */
+.codeLens {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+.codeLens:hover {
+  text-decoration: underline;
+}
+
+/* Parameter Hints */
+.parameterHints {
+  background-color: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+  font-size: 13px;
+  max-width: 300px;
+}
+
+.parameterName {
+  font-weight: 500;
+}
+
+.parameterType {
   color: hsl(var(--muted-foreground));
   font-style: italic;
 }
 
-/* Console Output Types */
-.output {
-  margin-bottom: 0.5rem;
-  white-space: pre-wrap;
-  word-break: break-word;
+.parameterDescription {
+  margin-top: 4px;
+  font-size: 12px;
 }
 
-.timestamp {
-  color: hsl(var(--muted-foreground));
-  margin-right: 0.5rem;
-  font-size: 0.75rem;
-}
-
-.logMessage {
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-}
-
-.error {
-  color: hsl(var(--error));
-}
-
-.warning {
-  color: hsl(var(--warning));
-}
-
-.info {
-  color: hsl(var(--info));
-}
-
-.success {
-  color: hsl(var(--success));
-}
-
-.log {
-  color: hsl(var(--terminal-text));
-}
-
-/* Terminal Panel */
-.terminalPanel {
-  height: 100%;
-  background-color: hsl(var(--terminal-bg));
-  color: hsl(var(--terminal-text));
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.terminalContainer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.terminalOutput {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.75rem;
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.terminalWelcome {
-  color: hsl(var(--info));
-  margin-bottom: 1rem;
-}
-.terminalForm {
-  display: flex;
-  align-items: center;
-  background-color: #1a1a1a; /* Dark terminal background */
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #333; /* Subtle border */
-  width: 100%;
-}
-
-.terminalPrompt {
-  color: #0f0; /* Neon green prompt */
-  font-weight: bold;
-  margin-right: 8px;
-  font-family: "Courier New", monospace;
-}
-
-.terminalInput {
-  flex: 1;
-  font-size: 16px;
-  color: #0f0; /* Green text */
-  background-color: transparent; /* Blends with form */
-  border: none;
-  outline: none;
-  font-family: "Courier New", monospace;
-  caret-color: #0f0; /* Green blinking cursor */
-}
-
-.terminalInput::placeholder {
-  color: rgba(0, 255, 0, 0.5); /* Faded green placeholder */
-}
-
-.terminalInput:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Problems Panel */
-.problemsPanel {
-  height: 100%;
-  overflow: auto;
-  padding: 0.75rem;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-}
-
-.emptyErrorPanel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: hsl(var(--muted-foreground));
-  gap: 0.75rem;
-}
-
-.errorPanel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.5rem;
-}
-
-.errorItem {
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  background-color: hsl(var(--error) / 0.05);
-  border-left: 3px solid hsl(var(--error));
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.errorItem:hover {
-  background-color: hsl(var(--error) / 0.1);
-}
-
-.errorHeader {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.errorIcon {
-  color: hsl(var(--error));
-  margin-top: 0.125rem;
-}
-
-.errorMessage {
-  font-weight: 500;
-  color: hsl(var(--error));
-  flex: 1;
-}
-
-.errorLocation {
-  font-size: 0.75rem;
-  color: hsl(var(--muted-foreground));
-  margin-left: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.errorStack {
-  font-family: ui-monospace, Menlo, Monaco, monospace;
-  font-size: 0.75rem;
-  background-color: hsl(var(--muted));
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  margin-top: 0.5rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-height: 200px;
-  overflow: auto;
-}
-
-/* Status Bar */
-.statusBar {
-  height: 1.5rem;
-  border-top: 1px solid hsl(var(--border));
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.75rem;
-  font-size: 0.75rem;
-}
-
-.statusLeft,
-.statusRight {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.statusItem {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.statusError {
-  color: hsl(var(--error));
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.statusIcon {
-  margin-right: 0.25rem;
-}
-
-/* Utility Classes */
-.iconButton {
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  background-color: transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
+/* Tab Overflow */
+.tabOverflowButton {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.iconButton:hover {
-  background-color: hsl(var(--accent) / 0.1);
-  color: hsl(var(--accent));
-}
-
-.iconButton:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
-}
-
-.iconButton.active {
-  color: hsl(var(--accent));
-  background-color: hsl(var(--accent) / 0.1);
-}
-
-.iconButton.processing {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Visibility Classes */
-.visible {
-  display: flex;
-}
-
-.hidden {
-  display: none;
-}
-
-/* Animations */
-.spinning {
-  animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Scrollbars */
-.fileList::-webkit-scrollbar,
-.consolePanel::-webkit-scrollbar,
-.terminalOutput::-webkit-scrollbar,
-.packageList::-webkit-scrollbar,
-.errorStack::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.fileList::-webkit-scrollbar-track,
-.consolePanel::-webkit-scrollbar-track,
-.terminalOutput::-webkit-scrollbar-track,
-.packageList::-webkit-scrollbar-track,
-.errorStack::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.fileList::-webkit-scrollbar-thumb,
-.consolePanel::-webkit-scrollbar-thumb,
-.terminalOutput::-webkit-scrollbar-thumb,
-.packageList::-webkit-scrollbar-thumb,
-.errorStack::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
-  border-radius: 4px;
-}
-
-.fileList::-webkit-scrollbar-thumb:hover,
-.consolePanel::-webkit-scrollbar-thumb:hover,
-.terminalOutput::-webkit-scrollbar-thumb:hover,
-.packageList::-webkit-scrollbar-thumb:hover,
-.errorStack::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .sidebar {
-    position: absolute;
-    top: 3.5rem;
-    bottom: 0;
-    left: 0;
-    z-index: 20;
-    width: 80%;
-    max-width: 300px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .mainContent.vertical {
-    flex-direction: column;
-  }
-
-  .bottomPanel {
-    height: 40%;
-  }
-}
-
-/* Monaco Editor Specific Styles */
-.monaco-editor .margin {
-  background-color: hsl(var(--card));
-}
-
-.monaco-editor .monaco-editor-background {
-  background-color: hsl(var(--card));
-}
-
-.monaco-editor .line-numbers {
-  color: hsl(var(--muted-foreground));
-}
-
-.monaco-editor .current-line {
-  border: none;
-  background-color: hsl(var(--accent) / 0.05);
-}
-
-.monaco-editor .view-overlays .current-line {
-  border: none;
-  background-color: hsl(var(--accent) / 0.05);
-}
-
-.monaco-editor .margin-view-overlays .current-line-margin {
-  border: none;
-  background-color: hsl(var(--accent) / 0.05);
-}
-
-/* Terminal Entry Styles */
-.terminalEntry {
-  margin-bottom: 0.5rem;
-}
-
-.terminalCommand {
-  display: flex;
-  align-items: center;
-  color: #0f0;
-}
-
-.terminalCommandText {
-  margin-left: 0.5rem;
-}
-
-/* Ensure Monaco Editor fills container */
-.monaco-editor {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Editor Tabs */
-.editorTabs {
-  display: flex;
-  overflow-x: auto;
-  background-color: hsl(var(--muted));
-  border-bottom: 1px solid hsl(var(--border));
+  width: 24px;
   height: 36px;
-  padding-left: 0.5rem;
-}
-
-.editorTab {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.75rem;
-  height: 100%;
-  min-width: 120px;
-  max-width: 200px;
   background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
+  border: none;
   border-right: 1px solid hsl(var(--border));
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.editorTab.active {
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border-top: 2px solid hsl(var(--accent));
-}
-
-.editorTabContent {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  overflow: hidden;
-  flex: 1;
-}
-
-.editorTabName {
-  font-size: 0.875rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.editorTabClose {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background-color: transparent;
-  border: none;
   color: hsl(var(--muted-foreground));
+}
+
+.tabOverflowButton:hover {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.tabOverflowMenu {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-dropdown);
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tabOverflowMenuItem {
+  padding: 8px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-left: 0.25rem;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.editorTabClose:hover {
-  background-color: hsl(var(--destructive) / 0.1);
-  color: hsl(var(--destructive));
+.tabOverflowMenuItem:hover {
+  background-color: hsl(var(--accent) / 0.1);
+  color: hsl(var(--accent));
 }
 
-/* File Tree Enhancements */
-.fileTreeItemHeader.selected {
+.tabOverflowMenuItem.active {
   background-color: hsl(var(--accent) / 0.2);
   color: hsl(var(--accent));
 }
 
-.unsavedBadge {
-  color: hsl(var(--warning));
-  font-size: 1.25rem;
-  line-height: 1;
-  margin-left: 0.25rem;
-}
-
-/* Context Menu Enhancements */
-.contextMenu {
-  z-index: 1000;
-  min-width: 180px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.contextMenuItem {
-  font-size: 0.8125rem;
-}
-
-.previewNavigation {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  padding: 10px 15px;
+/* Multi-cursor indicator */
+.multiCursorIndicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background-color: hsl(var(--accent) / 0.2);
+  color: hsl(var(--accent));
+  padding: 2px 6px;
   border-radius: var(--radius);
-  border: 1px solid hsl(var(--border));
-  transition: background-color 0.3s, color 0.3s;
+  font-size: 12px;
+  pointer-events: none;
 }
 
-.previewNavigationLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: hsl(var(--muted-foreground));
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.previewNavigationSelect {
-  background-color: hsl(var(--input));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: var(--radius);
-  outline: none;
-  transition: all 0.3s ease-in-out;
-  cursor: pointer;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .breadcrumbs {
+    max-width: 150px;
+  }
+
+  .searchPanel {
+    width: 250px;
+  }
+
+  .statusLeft,
+  .statusRight {
+    gap: 8px;
+  }
 }
 
-.previewNavigationSelect:hover {
-  border-color: hsl(var(--accent));
-}
-
-.previewNavigationSelect:focus {
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 5px hsl(var(--ring));
-}
-
-.previewNavigationSelect option {
-  background-color: hsl(var(--popover));
-  color: hsl(var(--popover-foreground));
-}
-
-/* Dark Mode */
-[data-theme="dark"] .previewNavigation {
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border-color: hsl(var(--border));
-}
-
-[data-theme="dark"] .previewNavigationLabel {
-  color: hsl(var(--muted-foreground));
-}
-
-[data-theme="dark"] .previewNavigationSelect {
-  background-color: hsl(var(--input));
-  color: hsl(var(--foreground));
-  border-color: hsl(var(--border));
-}
-
-[data-theme="dark"] .previewNavigationSelect:hover {
-  border-color: hsl(var(--accent));
-}
-
-[data-theme="dark"] .previewNavigationSelect:focus {
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 5px hsl(var(--ring));
-}
-
-[data-theme="dark"] .previewNavigationSelect option {
-  background-color: hsl(var(--popover));
-  color: hsl(var(--popover-foreground));
-}

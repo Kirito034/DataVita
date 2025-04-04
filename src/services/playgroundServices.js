@@ -1,76 +1,131 @@
-import axios from 'axios';
+import axios from "axios"
 
-const API_BASE_URL  = 'http://127.0.0.1:5000/playground_files';
+const FILES_API_BASE_URL = "http://127.0.0.1:5000/playground_files"
+const PROJECTS_API_BASE_URL = "http://127.0.0.1:5000/playground_project"
 
 const PlaygroundServices = {
+  // Fetch all files for a specific user
   getUserFiles: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/files/user/${userId}`)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch files: ${response.status}`)
-      }
-      return await response.json()
+      const response = await axios.get(`${FILES_API_BASE_URL}/files/user/${userId}`)
+      return response.data
     } catch (error) {
       console.error("Error fetching user files:", error)
       throw error
     }
   },
 
+  // Save a new file
   saveFile: async (fileData) => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/files`, {
-          method: "POST",
-          headers: {
+    try {
+      const response = await axios.post(`${FILES_API_BASE_URL}/files`, fileData, {
+        headers: { "Content-Type": "application/json" },
+      })
+      return response.data
+    } catch (error) {
+      console.error("❌ Error saving file:", error.message)
+      throw error
+    }
+  },
 
-            
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(fileData),
-        });
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Failed to save file: ${response.status}`);
-        }
-  
-        const savedFile = await response.json();
-        return savedFile;
-      } catch (error) {
-        console.error("❌ Error saving file:", error.message);
-        throw error;
-      }
-    },
-    
+  // Update an existing file
   updateFile: async (fileId, fileData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(fileData),
+      const response = await axios.put(`${FILES_API_BASE_URL}/files/${fileId}`, fileData, {
+        headers: { "Content-Type": "application/json" },
       })
-      if (!response.ok) {
-        throw new Error(`Failed to update file: ${response.status}`)
-      }
-      return await response.json()
+      return response.data
     } catch (error) {
       console.error("Error updating file:", error)
       throw error
     }
   },
 
+  // Delete a file by ID
   deleteFile: async (fileId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
-        method: "DELETE",
-      })
-      if (!response.ok) {
-        throw new Error(`Failed to delete file: ${response.status}`)
-      }
-      return response.ok
+      const response = await axios.delete(`${FILES_API_BASE_URL}/files/${fileId}`)
+      return response.data
     } catch (error) {
       console.error("Error deleting file:", error)
+      throw error
+    }
+  },
+
+  // Fetch a project with its associated files
+  getProjectWithFiles: async (projectId) => {
+    try {
+      const response = await axios.get(`${PROJECTS_API_BASE_URL}/projects/${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching project with files:", error);
+      throw error;
+    }
+  },  
+
+  // Create a new playground file
+  createPlaygroundFile: async (fileData) => {
+    try {
+      const response = await axios.post(`${FILES_API_BASE_URL}/files`, fileData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      return response.data
+    } catch (error) {
+      console.error("Error creating playground file:", error.message)
+      throw error
+    }
+  },
+
+  // Get all projects for a user
+  getUserProjects: async (userId) => {
+    try {
+      const response = await axios.get(`${PROJECTS_API_BASE_URL}/projects/user/${userId}`)
+      return response.data
+    } catch (error) {
+      console.error("Error fetching user projects:", error)
+      throw error
+    }
+  },
+
+  // Create a new project
+  createProject: async (projectData) => {
+    try {
+      const response = await axios.post(`${PROJECTS_API_BASE_URL}/projects`, projectData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      return response.data
+    } catch (error) {
+      console.error("Error creating project:", error.message)
+      throw error
+    }
+  },
+
+  // Update project details
+  updateProject: async (projectId, projectData) => {
+    try {
+      const response = await axios.put(`${PROJECTS_API_BASE_URL}/projects/${projectId}`, projectData, {
+        headers: { "Content-Type": "application/json" },
+      })
+      return response.data
+    } catch (error) {
+      console.error("Error updating project:", error)
+      throw error
+    }
+  },
+
+  // Delete a project (and its files)
+  deleteProject: async (projectId) => {
+    try {
+      const response = await axios.delete(`${PROJECTS_API_BASE_URL}/projects/${projectId}`)
+      return response.data
+    } catch (error) {
+      console.error("Error deleting project:", error)
       throw error
     }
   },

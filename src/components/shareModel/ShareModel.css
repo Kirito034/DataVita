@@ -1,0 +1,370 @@
+/* Share Modals - Modern Monochrome Theme */
+:root {
+    --modal-bg: #1a1a1a;
+    --modal-border: #333333;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --text-tertiary: #707070;
+    --accent: #404040;
+    --accent-hover: #505050;
+    --input-bg: #252525;
+    --item-hover-bg: #303030;
+    --success: #4a4a4a;
+    --error: #5a5a5a;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --transition: all 0.2s ease;
+    --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  }
+  
+  /* Modal Overlay */
+  .share-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--modal-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(3px);
+  }
+  
+  /* Modal Container */
+  .share-modal-container {
+    background-color: var(--modal-bg);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    border: 1px solid var(--modal-border);
+  }
+  
+  /* Close Button */
+  .share-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+  
+  .share-modal-close:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Modal Title */
+  .share-modal-title {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+  }
+  
+  .share-filename {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  
+  /* Modal Description */
+  .share-modal-description {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  
+  /* Search Container */
+  .share-search-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--input-bg);
+    border: 1px solid var(--modal-border);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    margin-bottom: 12px;
+    transition: var(--transition);
+  }
+  
+  .share-search-container:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(64, 64, 64, 0.3);
+  }
+  
+  .share-search-icon {
+    color: var(--text-secondary);
+    margin-right: 8px;
+  }
+  
+  .share-search-input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    width: 100%;
+    font-size: 14px;
+    padding: 10px 0;
+    outline: none;
+    font-family: var(--font-mono);
+  }
+  
+  .share-search-input::placeholder {
+    color: var(--text-tertiary);
+  }
+  
+  /* User Suggestions */
+  .share-user-suggestions {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    background-color: var(--input-bg);
+    border: 1px solid var(--modal-border);
+    border-radius: var(--radius-sm);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .share-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+  }
+  
+  .share-suggestion-item:hover {
+    background-color: var(--item-hover-bg);
+  }
+  
+  .share-user-icon {
+    color: var(--text-secondary);
+  }
+  
+  /* Selected Users */
+  .share-selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    min-height: 40px;
+  }
+  
+  .share-no-users {
+    color: var(--text-tertiary);
+    font-size: 14px;
+    font-style: italic;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .share-user-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--accent);
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+  
+  .share-remove-user {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: var(--transition);
+  }
+  
+  .share-remove-user:hover {
+    color: var(--text-primary);
+  }
+  
+  /* Users List */
+  .share-users-list {
+    background-color: var(--input-bg);
+    border: 1px solid var(--modal-border);
+    border-radius: var(--radius-sm);
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+  
+  .share-user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .share-user-item:last-child {
+    border-bottom: none;
+  }
+  
+  .share-user-item:hover {
+    background-color: var(--item-hover-bg);
+  }
+  
+  .share-user-item.selected {
+    background-color: var(--accent);
+  }
+  
+  .share-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .share-check-icon {
+    color: var(--text-primary);
+  }
+  
+  /* Messages */
+  .share-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  
+  .share-message.error {
+    background-color: rgba(90, 90, 90, 0.2);
+    border-left: 3px solid var(--error);
+    color: var(--text-primary);
+  }
+  
+  .share-message.success {
+    background-color: rgba(74, 74, 74, 0.2);
+    border-left: 3px solid var(--success);
+    color: var(--text-primary);
+  }
+  
+  /* Action Buttons */
+  .share-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  
+  .share-send-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--accent);
+    color: var(--text-primary);
+    border: none;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--transition);
+    font-family: var(--font-mono);
+  }
+  
+  .share-send-button:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+  
+  .share-send-button:active {
+    transform: translateY(0);
+  }
+  
+  .share-send-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .share-send-button.full-width {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .share-cancel-button {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--modal-border);
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+    font-family: var(--font-mono);
+  }
+  
+  .share-cancel-button:hover {
+    background-color: var(--item-hover-bg);
+    color: var(--text-primary);
+  }
+  
+  /* Scrollbar Styling */
+  .share-users-list::-webkit-scrollbar,
+  .share-user-suggestions::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .share-users-list::-webkit-scrollbar-track,
+  .share-user-suggestions::-webkit-scrollbar-track {
+    background: var(--modal-bg);
+  }
+  
+  .share-users-list::-webkit-scrollbar-thumb,
+  .share-user-suggestions::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
+  }
+  
+  .share-users-list::-webkit-scrollbar-thumb:hover,
+  .share-user-suggestions::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .share-modal-container {
+      width: 95%;
+      max-width: 350px;
+      padding: 20px;
+    }
+  
+    .share-modal-title {
+      font-size: 16px;
+      padding-right: 24px;
+    }
+  }
+  
+  

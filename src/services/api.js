@@ -272,17 +272,62 @@ export const fetchFileStructure = async () => {
  * Fetch the content of a specific file.
  * @param {string} filename - The name of the file to fetch.
  */
+ 
 export const fetchFileContent = async (filename) => {
   try {
-    // Normalize the file path by removing the "user_workspace/" prefix
-    const normalizedFilename = filename.replace(/^\.\/user_workspace[\\/]/, "");
-
-    // Fetch the file content using the normalized path
-    const response = await axios.get(`${API_URL}/api/files/${normalizedFilename}`);
-    return response.data.content || "";
+      if (!filename || filename.trim() === "") {
+          throw new Error("Filename is required");
+      }
+ 
+      // Normalize path (remove "./", "../", or "user_workspace/")
+      const normalizedFilename = filename.replace(/^(\.\/|\.\.\/|user_workspace[\\/])/, "").trim();
+      const apiUrl = `${API_URL}/api/files/content?path=${encodeURIComponent(normalizedFilename)}`;
+ 
+      console.log(`📂 Requested file: ${filename}`);
+      console.log(`🔍 Normalized file: ${normalizedFilename}`);
+      console.log(`📡 Fetching from API: ${apiUrl}`);
+ 
+      const response = await axios.get(apiUrl, { withCredentials: true });
+ 
+      return response.data.content || "";
+ 
   } catch (error) {
-    console.error(`Error fetching content for file "${filename}":`, error);
-    throw error;
+      if (error.response) {
+          console.error(`❌ API Error ${error.response.status}: ${error.response.data.message}`);
+      } else {
+          console.error(`❌ Network/Unknown Error:`, error.message);
+      }
+      throw error;
+  }
+};
+ 
+ 
+ 
+export const fetchSharedFileContent = async (filename) => {
+  try {
+      if (!filename || filename.trim() === "") {
+          throw new Error("Filename is required");
+      }
+ 
+      // Normalize path (remove "./", "../", or "user_workspace/")
+      const normalizedFilename = filename.replace(/^(\.\/|\.\.\/|user_workspace[\\/])/, "").trim();
+      const apiUrl = `${API_URL}/api/files/content?path=${encodeURIComponent(normalizedFilename)}`;
+ 
+      console.log(`📂 Requested file: ${filename}`);
+      console.log(`🔍 Normalized file: ${normalizedFilename}`);
+      console.log(`📡 Fetching from API: ${apiUrl}`);
+ 
+      const response = await axios.get(apiUrl, { withCredentials: true });
+ 
+      return response.data.content || "";
+ 
+  } catch (error) {
+      if (error.response) {
+          console.error(`❌ API Error ${error.response.status}: ${error.response.data.message}`);
+      } else {
+          console.error(`❌ Network/Unknown Error:`, error.message);
+      }
+      throw error;
   }
 };
 /**
@@ -299,31 +344,36 @@ export async function saveFileContent(fileName, content) {
     throw new Error("Invalid content: Cannot be undefined or null.");
   }
 
+  // Log the request payload for debugging
+  console.log("🚀 Sending request to save file:", {
+    filename: fileName,
+    content,
+  });
+
   try {
-    // Use environment variables for the API base URL
     const response = await fetch(`${API_URL}/api/save-file`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ file_name: fileName, content }),
+      body: JSON.stringify({ filename: fileName, content }),
     });
 
-    // Check if the response is successful
     if (!response.ok) {
-      const errorMessage = await response.text(); // Try to get detailed error message
-      throw new Error(`Failed to save file: ${response.statusText} (${errorMessage})`);
+      const errorMessage = await response.text();
+      console.error(`❌ Failed to save file: ${response.status} - ${errorMessage}`);
+      throw new Error(`Failed to save file: ${response.status} - ${errorMessage}`);
     }
 
-    // Parse and return the response
     const data = await response.json();
-    console.log("File saved successfully:", data);
+    console.log("✅ File saved successfully:", data);
     return data;
   } catch (error) {
-    console.error("Error saving file:", error.message);
-    throw error; // Re-throw the error for the caller to handle
+    console.error("❌ Error saving file:", error.message);
+    throw error; // Rethrow for caller to handle
   }
 }
+
 
 
 /**
